@@ -143,7 +143,7 @@
         button.addEventListener('click', function () {
             const form = document.getElementById('formHapusBarang');
             form.action = '<?= base_url('barang/hapus') ?>/' + this.dataset.id;
-            simlabConfirm(
+            khazlabConfirm(
                 'Hapus <strong>' + this.dataset.nama + '</strong> dari inventaris? Data yang masih memiliki riwayat peminjaman akan ditolak sistem demi integritas laporan.',
                 () => form.submit(),
                 'Ya, Hapus Barang'

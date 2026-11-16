@@ -1,4 +1,4 @@
-# SIM-LAB — Sistem Informasi Inventaris Barang Laboratorium
+# <KhazLab> — Sistem Informasi Inventaris Barang Laboratorium
 
 Aplikasi web pengelolaan inventaris laboratorium komputer: data barang, kategori, lokasi penyimpanan, kondisi barang, peminjaman beserta jatuh tempo, pengembalian, dashboard analitik, dan laporan siap cetak/ekspor.
 
@@ -135,7 +135,7 @@ app/
 ├─ Views/           Layout, auth, dashboard, barang, kategori, lokasi, peminjaman, laporan
 └─ Filters/         AuthFilter
 
-public/assets/css/  simlab.css (tema laboratorium, dipakai semua halaman)
+public/assets/css/  khazlab.css (tema laboratorium, dipakai semua halaman)
 
 docs/screenshots/   Tangkapan layar untuk laporan dan demo
 database.sql        Struktur database + data awal laboratorium

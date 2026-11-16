@@ -154,7 +154,7 @@
         const diminta = Number(jumlah.value || 0);
         if (diminta > stok) {
             e.preventDefault();
-            simlabConfirm(`Jumlah pinjam (${diminta} unit) melebihi stok tersedia (${stok} unit). Sistem akan menolak transaksi ini.`, () => {}, 'Mengerti');
+            khazlabConfirm(`Jumlah pinjam (${diminta} unit) melebihi stok tersedia (${stok} unit). Sistem akan menolak transaksi ini.`, () => {}, 'Mengerti');
         }
     });
 </script>

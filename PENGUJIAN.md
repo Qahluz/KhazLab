@@ -1,4 +1,4 @@
-# PENGUJIAN.md — Hasil Pengujian SIM-LAB
+# PENGUJIAN.md — Hasil Pengujian <KhazLab>
 
 Dokumen ini mencatat pengujian yang **benar-benar dijalankan** pada aplikasi, bukan rencana pengujian.
 

@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'SIM-LAB - Sistem Informasi Inventaris Laboratorium') ?></title>
+    <title><?= esc($title ?? '<KhazLab> - Sistem Informasi Inventaris Laboratorium') ?></title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= base_url('assets/css/simlab.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/khazlab.css') ?>">
 </head>
 <body>
 <aside id="sidebar" aria-label="Navigasi utama">
     <div class="brand">
         <span class="brand-mark"><i class="bi bi-cpu-fill"></i></span>
         <span class="brand-text">
-            <strong>SIM-LAB</strong>
+            <strong><?= esc('<KhazLab>') ?></strong>
             <small>Inventaris Laboratorium</small>
         </span>
     </div>
@@ -130,7 +130,7 @@
         document.getElementById('sidebarToggle')?.addEventListener('click', () => sidebar.classList.toggle('show'));
     })();
 
-    window.simlabConfirm = (message, onConfirm, label = 'Ya, Lanjutkan') => {
+    window.khazlabConfirm = (message, onConfirm, label = 'Ya, Lanjutkan') => {
         const modalEl = document.getElementById('modalKonfirmasi');
         document.getElementById('modalKonfirmasiBody').innerHTML = message;
         document.getElementById('modalKonfirmasiOk').textContent = label;

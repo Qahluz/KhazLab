@@ -58,7 +58,7 @@
     <div class="p-4">
         <div class="text-center border-bottom pb-3 mb-3">
             <h3 class="h5 fw-bold mb-1 text-dark">LABORATORIUM KOMPUTER - PROGRAM STUDI SISTEM INFORMASI</h3>
-            <div class="small text-muted">Sistem Informasi Inventaris Laboratorium (SIM-LAB)</div>
+            <div class="small text-muted">Sistem Informasi Inventaris Laboratorium (<?= esc('<KhazLab>') ?>)</div>
             <div class="small text-muted">Jl. Kampus Praktikum No. 1, Jakarta &middot; labkom@kampus.ac.id</div>
         </div>
 
