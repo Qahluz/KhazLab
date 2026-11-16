@@ -1,0 +1,41 @@
+#--------------------------------------------------------------------
+# Template Konfigurasi Environment - SIM Inventaris Lab (CodeIgniter 4)
+#--------------------------------------------------------------------
+# Cara Penggunaan:
+# 1. Salin (copy) file `.env.example` (atau `env`) ini menjadi `.env` di direktori utama project.
+#    - Linux/macOS : cp .env.example .env
+#    - Windows CMD : copy .env.example .env
+# 2. Sesuaikan nilai konfigurasi di bawah dengan environment lokal Anda.
+#--------------------------------------------------------------------
+
+#--------------------------------------------------------------------
+# ENVIRONMENT
+# Pilihan: development | production | testing
+#--------------------------------------------------------------------
+CI_ENVIRONMENT = development
+
+#--------------------------------------------------------------------
+# APP CONFIGURATION
+# Sesuaikan `app.baseURL` dengan cara Anda menjalankan aplikasi:
+# - Jika menggunakan `php spark serve` : 'http://127.0.0.1:8081/'
+# - Jika menggunakan Apache XAMPP      : 'http://localhost/Project_Akhir/'
+#   (Sesuaikan `Project_Akhir` jika nama folder di dalam `htdocs` berbeda)
+#--------------------------------------------------------------------
+app.baseURL = 'http://127.0.0.1:8081/'
+app.indexPage = ''
+app.forceGlobalSecureRequests = false
+
+#--------------------------------------------------------------------
+# DATABASE CONFIGURATION (MySQL / MariaDB)
+# Catatan: Gunakan `127.0.0.1` agar koneksi selalu melalui TCP/IP port 3306
+# dan menghindari masalah lokasi file socket Unix pada berbagai distro Linux.
+#--------------------------------------------------------------------
+database.default.hostname = 127.0.0.1
+database.default.database = db_inventaris_lab
+database.default.username = root
+database.default.password = ''
+database.default.DBDriver = MySQLi
+database.default.DBPrefix = ''
+database.default.port = 3306
+database.default.charset = utf8mb4
+database.default.DBCollat = utf8mb4_unicode_ci
