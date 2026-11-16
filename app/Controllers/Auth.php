@@ -23,7 +23,7 @@ class Auth extends BaseController
         }
 
         $data = [
-            'title'      => 'Login Administrator - <KhazLab>',
+            'title'      => 'Login Administrator - Khazlab',
             'validation' => session()->getFlashdata('validation') ?? \Config\Services::validation(),
         ];
 

@@ -1,4 +1,4 @@
--- Sistem Informasi Inventaris Barang Laboratorium Komputer (<KhazLab>)
+-- Sistem Informasi Inventaris Barang Laboratorium Komputer (Khazlab)
 -- Skema final: tabel users, kategori, lokasi, barang, peminjaman, login_attempts
 -- Data dummy: 4 kategori, 4 lokasi, 14 barang, 20 transaksi peminjaman
 

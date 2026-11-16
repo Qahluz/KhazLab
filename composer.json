@@ -1,6 +1,6 @@
 {
     "name": "labkom/sim-inventaris-lab",
-    "description": "Sistem Informasi Inventaris Barang Laboratorium (<KhazLab>) berbasis CodeIgniter 4",
+    "description": "Sistem Informasi Inventaris Barang Laboratorium (Khazlab) berbasis CodeIgniter 4",
     "license": "MIT",
     "type": "project",
     "homepage": "https://codeigniter.com",

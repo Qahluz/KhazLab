@@ -1,6 +1,6 @@
-# BAHAN LAPORAN DAN DEMO — <KhazLab>
+# BAHAN LAPORAN DAN DEMO — Khazlab
 
-Dokumen pendukung untuk laporan akhir dan presentasi demo aplikasi **<KhazLab> (Sistem Informasi Inventaris Barang Laboratorium)**.
+Dokumen pendukung untuk laporan akhir dan presentasi demo aplikasi **Khazlab (Sistem Informasi Inventaris Barang Laboratorium)**.
 
 Isi dokumen:
 
@@ -16,7 +16,7 @@ Isi dokumen:
 
 ## 1. Ringkasan Aplikasi
 
-<KhazLab> mengelola inventaris Laboratorium Komputer: mencatat barang beserta kategori, lokasi penyimpanan, jumlah stok, dan kondisi; mencatat peminjaman dengan tanggal jatuh tempo; memulihkan stok saat pengembalian; serta menyajikan dashboard analitik dan laporan siap cetak.
+Khazlab mengelola inventaris Laboratorium Komputer: mencatat barang beserta kategori, lokasi penyimpanan, jumlah stok, dan kondisi; mencatat peminjaman dengan tanggal jatuh tempo; memulihkan stok saat pengembalian; serta menyajikan dashboard analitik dan laporan siap cetak.
 
 | Aspek | Keterangan |
 |---|---|
@@ -252,7 +252,7 @@ Siapkan sebelumnya: server berjalan, database hasil import `database.sql`, brows
 
 | Waktu | Langkah | Yang dikatakan |
 |---|---|---|
-| 0:00–0:20 | Buka halaman login | "<KhazLab> mengelola inventaris Laboratorium Komputer. Login memakai sesi, password bcrypt, dan pembatasan 5 percobaan gagal per 60 detik." |
+| 0:00–0:20 | Buka halaman login | "Khazlab mengelola inventaris Laboratorium Komputer. Login memakai sesi, password bcrypt, dan pembatasan 5 percobaan gagal per 60 detik." |
 | 0:20–0:45 | Salah password 6 kali | "Percobaan ke-6 diblokir. Penghitungnya disimpan di database, jadi tidak hilang walau sesi berganti." |
 | 0:45–1:05 | Login `admin` / `admin123` | "Setelah berhasil, penghitung otomatis dibersihkan." |
 | 1:05–1:50 | Dashboard, lalu Analitik | "Kartu ini memisahkan total aset fisik dari stok tersedia. Grafik tengah komposisi kondisi, kanan tren peminjaman enam bulan, bawah unit yang sedang dipinjam." |

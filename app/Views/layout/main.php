@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? '<KhazLab> - Sistem Informasi Inventaris Laboratorium') ?></title>
+    <title><?= esc($title ?? 'Khazlab - Sistem Informasi Inventaris Laboratorium') ?></title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -14,7 +14,7 @@
     <div class="brand">
         <span class="brand-mark"><i class="bi bi-cpu-fill"></i></span>
         <span class="brand-text">
-            <strong><?= esc('<KhazLab>') ?></strong>
+            <strong>Khazlab</strong>
             <small>Inventaris Laboratorium</small>
         </span>
     </div>

@@ -1,4 +1,4 @@
-# <KhazLab> — Sistem Informasi Inventaris Barang Laboratorium
+# Khazlab — Sistem Informasi Inventaris Barang Laboratorium
 
 Aplikasi web pengelolaan inventaris laboratorium komputer: data barang, kategori, lokasi penyimpanan, kondisi barang, peminjaman beserta jatuh tempo, pengembalian, dashboard analitik, dan laporan siap cetak/ekspor.
 
