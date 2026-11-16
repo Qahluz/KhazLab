@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Libraries\PeminjamanStatus;
 use App\Models\BarangModel;
 use App\Models\KategoriModel;
 use App\Models\LokasiModel;
@@ -23,56 +23,63 @@ class Dashboard extends BaseController
         $this->peminjamanModel = new PeminjamanModel();
     }
 
-    /**
-     * Menampilkan dashboard utama dengan ringkasan jumlah barang dan statistik kondisi barang.
-     */
     public function index()
     {
-        $db = \Config\Database::connect();
-
-        // 1. Ringkasan Total Data
-        $totalJenisBarang = $this->barangModel->countAllResults();
-        
-        $stokQuery = $db->query("SELECT COALESCE(SUM(jumlah), 0) AS total_unit FROM barang")->getRow();
-        $totalUnitBarang = (int)($stokQuery->total_unit ?? 0);
-
-        $pinjamQuery = $db->query("SELECT COALESCE(SUM(jumlah_pinjam), 0) AS total_pinjam FROM peminjaman WHERE status = 'Dipinjam'")->getRow();
-        $totalSedangDipinjam = (int)($pinjamQuery->total_pinjam ?? 0);
-
-        $totalKategori = $this->kategoriModel->countAllResults();
-        $totalLokasi   = $this->lokasiModel->countAllResults();
-
-        // 2. Statistik Kondisi Barang (Baik, Rusak Ringan, Rusak Berat)
-        $kondisiBaik = $this->barangModel->where('kondisi', 'Baik')->countAllResults();
-        $kondisiRusakRingan = $this->barangModel->where('kondisi', 'Rusak Ringan')->countAllResults();
-        $kondisiRusakBerat = $this->barangModel->where('kondisi', 'Rusak Berat')->countAllResults();
-
-        // 3. Peminjaman Terkini (5 data terbaru)
-        $peminjamanTerbaru = $this->peminjamanModel->getPeminjamanWithDetails(null, 5);
-
-        // 4. Barang dengan stok menipis (<= 2 unit)
-        $barangStokMenipis = $this->barangModel->select('barang.*, kategori.nama_kategori, lokasi.nama_lokasi')
-                                               ->join('kategori', 'kategori.id_kategori = barang.id_kategori')
-                                               ->join('lokasi', 'lokasi.id_lokasi = barang.id_lokasi')
-                                               ->where('barang.jumlah <=', 2)
-                                               ->orderBy('barang.jumlah', 'ASC')
-                                               ->limit(5)
-                                               ->findAll();
-
         $data = [
-            'title'               => 'Dashboard Inventaris Laboratorium',
-            'totalJenisBarang'    => $totalJenisBarang,
-            'totalUnitBarang'     => $totalUnitBarang,
-            'totalSedangDipinjam' => $totalSedangDipinjam,
-            'totalKategori'       => $totalKategori,
-            'totalLokasi'         => $totalLokasi,
-            'kondisiBaik'         => $kondisiBaik,
-            'kondisiRusakRingan'  => $kondisiRusakRingan,
-            'kondisiRusakBerat'   => $kondisiRusakBerat,
-            'peminjamanTerbaru'   => $peminjamanTerbaru,
-            'barangStokMenipis'   => $barangStokMenipis,
+            'title'             => 'Dashboard Inventaris Laboratorium',
+            'ringkasan'         => $this->barangModel->getRingkasanAset(),
+            'ringkasanPinjam'   => $this->peminjamanModel->getRingkasan(),
+            'totalKategori'     => $this->kategoriModel->countAllResults(),
+            'totalLokasi'       => $this->lokasiModel->countAllResults(),
+            'peminjamanTerbaru' => $this->peminjamanModel->getPeminjamanTerkini(5),
+            'barangStokMenipis' => $this->barangModel->getStokMenipis(PeminjamanStatus::AMBANG_STOK_MENIPIS),
+            'barangRusakBerat'  => $this->barangModel->getRusakBerat(),
+            'peminjamanTelat'   => $this->peminjamanModel->getTerlambat(),
+            'trenPeminjaman'    => $this->peminjamanModel->getTrenPeminjaman(6),
         ];
 
         return view('dashboard/index', $data);
+    }
+
+    public function analitik()
+    {
+        $tren = $this->peminjamanModel->getTrenPeminjaman(6);
+
+        $data = [
+            'title'     => 'Dashboard Analitik Laboratorium',
+            'ringkasan' => $this->barangModel->getRingkasanAset(),
+            'tren'      => $tren,
+            'kategori'  => $this->kategoriModel->getKategoriWithCount(),
+            'lokasi'    => $this->lokasiModel->getLokasiWithCount(),
+            'stok'      => $this->peminjamanModel->getUnitDipinjamPerBarang(),
+            'barangList' => $this->barangModel->getBarangWithDetails(),
+        ];
+
+        return view('dashboard/analitik', $data);
+    }
+
+    public function exportAnalitikCsv()
+    {
+        $ringkasan = $this->barangModel->getRingkasanAset();
+        $tren      = $this->peminjamanModel->getTrenPeminjaman(6);
+
+        $rows = [
+            ['Metrik', 'Nilai'],
+            ['Total Aset Fisik (unit)', $ringkasan['total_aset']],
+            ['Stok Tersedia di Gudang (unit)', $ringkasan['stok_tersedia']],
+            ['Sedang Dipinjam (unit)', $ringkasan['dipinjam']],
+            ['Jenis Barang', $ringkasan['total_jenis']],
+            ['Kondisi Baik', $ringkasan['baik']],
+            ['Kondisi Rusak Ringan', $ringkasan['rusak_ringan']],
+            ['Kondisi Rusak Berat', $ringkasan['rusak_berat']],
+            [],
+            ['Bulan', 'Jumlah Transaksi Peminjaman'],
+        ];
+
+        foreach ($tren['labels'] as $i => $label) {
+            $rows[] = [$label, $tren['data'][$i]];
+        }
+
+        return $this->downloadCsv('analitik-laboratorium-' . date('Ymd-His') . '.csv', $rows);
     }
 }

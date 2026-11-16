@@ -1,161 +1,122 @@
 <?= $this->extend('layout/main') ?>
 
 <?= $this->section('content') ?>
-<!-- Action & Filter Bar (Disembunyikan saat mode cetak) -->
-<div class="card-custom mb-3 no-print">
-    <div class="card-body p-3">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+    <div>
+        <h2 class="h5 fw-bold mb-1 text-dark">Laporan Inventaris Laboratorium</h2>
+        <p class="text-muted small mb-0">Rekapitulasi siap cetak dan siap ekspor untuk kebutuhan pelaporan akademik.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 no-print">
+        <a href="<?= base_url('laporan/export-csv') ?>?<?= http_build_query(['keyword' => $keyword, 'kategori' => $selectedKat, 'lokasi' => $selectedLok, 'kondisi' => $selectedKon]) ?>"
+           class="btn btn-sm btn-outline-success"><i class="bi bi-filetype-csv me-1"></i>Export CSV (Excel)</a>
+        <a href="<?= base_url('laporan/cetak-peminjaman') ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-journal-text me-1"></i>Laporan Peminjaman</a>
+        <button type="button" class="btn btn-sm btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Cetak Laporan</button>
+    </div>
+</div>
+
+<div class="card-custom no-print">
+    <div class="card-header"><span><i class="bi bi-funnel me-1 text-primary"></i>Filter Laporan</span></div>
+    <div class="p-3">
+        <form method="get" action="<?= base_url('laporan') ?>" class="filter-bar">
             <div>
-                <h1 class="h5 fw-bold mb-1">Laporan Inventaris Barang</h1>
-                <p class="text-muted small mb-0">Cetak dan filter rekapitulasi inventaris laboratorium komputer</p>
+                <label class="form-label" for="keyword">Kode / Nama Barang</label>
+                <input type="search" class="form-control form-control-sm" id="keyword" name="keyword" value="<?= esc($keyword) ?>">
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" onclick="window.print()">
-                    <i class="bi bi-printer"></i>
-                    <span>Cetak Laporan</span>
-                </button>
-            </div>
-        </div>
-
-        <hr class="my-3">
-
-        <form action="<?= base_url('laporan') ?>" method="get" class="row g-2 align-items-center">
-            <div class="col-md-4">
-                <input type="text" 
-                       class="form-control form-control-sm" 
-                       name="keyword" 
-                       value="<?= esc($keyword ?? '') ?>" 
-                       placeholder="Cari kode atau nama barang...">
-            </div>
-            <div class="col-md-3">
-                <select name="kategori" class="form-select form-select-sm">
-                    <option value="">Semua Kategori</option>
+            <div>
+                <label class="form-label" for="kategori">Kategori</label>
+                <select class="form-select form-select-sm" id="kategori" name="kategori">
+                    <option value="">Semua kategori</option>
                     <?php foreach ($kategori as $kat) : ?>
-                        <option value="<?= $kat['id_kategori'] ?>" <?= (isset($selectedKat) && $selectedKat == $kat['id_kategori']) ? 'selected' : '' ?>>
-                            <?= esc($kat['nama_kategori']) ?>
-                        </option>
+                        <option value="<?= $kat['id_kategori'] ?>" <?= (string) $selectedKat === (string) $kat['id_kategori'] ? 'selected' : '' ?>><?= esc($kat['nama_kategori']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-3">
-                <select name="kondisi" class="form-select form-select-sm">
-                    <option value="">Semua Kondisi</option>
-                    <option value="Baik" <?= (isset($selectedKon) && $selectedKon === 'Baik') ? 'selected' : '' ?>>Baik</option>
-                    <option value="Rusak Ringan" <?= (isset($selectedKon) && $selectedKon === 'Rusak Ringan') ? 'selected' : '' ?>>Rusak Ringan</option>
-                    <option value="Rusak Berat" <?= (isset($selectedKon) && $selectedKon === 'Rusak Berat') ? 'selected' : '' ?>>Rusak Berat</option>
+            <div>
+                <label class="form-label" for="lokasi">Lokasi</label>
+                <select class="form-select form-select-sm" id="lokasi" name="lokasi">
+                    <option value="">Semua lokasi</option>
+                    <?php foreach ($lokasi as $lok) : ?>
+                        <option value="<?= $lok['id_lokasi'] ?>" <?= (string) $selectedLok === (string) $lok['id_lokasi'] ? 'selected' : '' ?>><?= esc($lok['nama_lokasi']) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-1">
-                <button type="submit" class="btn btn-sm btn-secondary flex-grow-1">Terapkan</button>
-                <a href="<?= base_url('laporan') ?>" class="btn btn-sm btn-outline-secondary" title="Reset">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                </a>
+            <div>
+                <label class="form-label" for="kondisi">Kondisi</label>
+                <select class="form-select form-select-sm" id="kondisi" name="kondisi">
+                    <option value="">Semua kondisi</option>
+                    <?php foreach (['Baik', 'Rusak Ringan', 'Rusak Berat'] as $kon) : ?>
+                        <option value="<?= $kon ?>" <?= $selectedKon === $kon ? 'selected' : '' ?>><?= $kon ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
+            <div><button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-search me-1"></i>Terapkan</button></div>
         </form>
     </div>
 </div>
 
-<!-- Lembar Dokumen Laporan Resmi -->
 <div class="card-custom">
-    <div class="card-body p-4 p-md-5">
-        <!-- Kop Laporan Resmi -->
-        <div class="text-center pb-3 mb-4 border-bottom border-dark border-2">
-            <h2 class="h5 fw-bold text-uppercase mb-1 tracking-wide">Laboratorium Komputer Program Studi Sistem Informasi</h2>
-            <h3 class="h6 fw-bold text-uppercase text-secondary mb-1">Fakultas Ilmu Komputer &bull; UPN "Veteran" Jakarta</h3>
-            <p class="small text-muted mb-0">Laporan Rekapitulasi Data Inventaris Aset & Perangkat Laboratorium</p>
+    <div class="p-4">
+        <div class="text-center border-bottom pb-3 mb-3">
+            <h3 class="h5 fw-bold mb-1 text-dark">LABORATORIUM KOMPUTER - PROGRAM STUDI SISTEM INFORMASI</h3>
+            <div class="small text-muted">Sistem Informasi Inventaris Laboratorium (SIM-LAB)</div>
+            <div class="small text-muted">Jl. Kampus Praktikum No. 1, Jakarta &middot; labkom@kampus.ac.id</div>
         </div>
 
-        <!-- Ringkasan Statistik Laporan -->
-        <div class="row g-2 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="p-2 border rounded text-center bg-light">
-                    <div class="small text-muted">Total Jenis Barang</div>
-                    <div class="fw-bold fs-6 text-dark"><?= number_format($totalJenis) ?> Item</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 border rounded text-center bg-light">
-                    <div class="small text-muted">Total Unit Tersedia</div>
-                    <div class="fw-bold fs-6 text-primary"><?= number_format($totalUnit) ?> Unit</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 border rounded text-center bg-light">
-                    <div class="small text-muted">Kondisi Baik</div>
-                    <div class="fw-bold fs-6 text-success"><?= $countBaik ?> Item</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="p-2 border rounded text-center bg-light">
-                    <div class="small text-muted">Perlu Perbaikan</div>
-                    <div class="fw-bold fs-6 text-danger"><?= ($countRusakRingan + $countRusakBerat) ?> Item</div>
-                </div>
-            </div>
+        <div class="d-flex justify-content-between flex-wrap small mb-3">
+            <div><strong>Jenis laporan:</strong> Rekapitulasi Inventaris Barang</div>
+            <div><strong>Tanggal cetak:</strong> <?= esc($tanggalCetak) ?></div>
         </div>
 
-        <!-- Tabel Rincian Inventaris -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered table-sm align-middle" style="font-size: 0.875rem;">
-                <thead class="table-light text-center">
+        <div class="row g-2 mb-3 small">
+            <div class="col-md-3"><div class="border rounded p-2"><div class="text-muted">Jenis Barang</div><div class="fw-bold"><?= $totalJenis ?></div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><div class="text-muted">Total Unit Stok</div><div class="fw-bold"><?= $totalUnit ?></div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><div class="text-muted">Kondisi Baik / Ringan</div><div class="fw-bold"><?= $countBaik ?> / <?= $countRusakRingan ?></div></div></div>
+            <div class="col-md-3"><div class="border rounded p-2"><div class="text-muted">Rusak Berat</div><div class="fw-bold text-danger"><?= $countRusakBerat ?></div></div></div>
+        </div>
+
+        <table class="table table-custom table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width:42px">No</th>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Kategori</th>
+                    <th>Lokasi</th>
+                    <th class="text-center">Stok</th>
+                    <th class="text-center">Kondisi</th>
+                    <th class="text-center">Tgl Masuk</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if (empty($barang)) : ?>
+                <tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada data barang pada filter ini.</td></tr>
+            <?php else : ?>
+                <?php $no = 1; foreach ($barang as $item) : ?>
                     <tr>
-                        <th style="width: 40px;">No</th>
-                        <th style="width: 130px;">Kode Barang</th>
-                        <th>Nama Barang / Perangkat</th>
-                        <th style="width: 140px;">Kategori</th>
-                        <th style="width: 140px;">Lokasi Ruangan</th>
-                        <th style="width: 80px;">Stok</th>
-                        <th style="width: 120px;">Kondisi</th>
-                        <th style="width: 100px;">Tgl Masuk</th>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td class="mono"><?= esc($item['kode_barang']) ?></td>
+                        <td><?= esc($item['nama_barang']) ?></td>
+                        <td><?= esc($item['nama_kategori']) ?></td>
+                        <td><?= esc($item['nama_lokasi']) ?></td>
+                        <td class="text-center"><?= (int) $item['jumlah'] ?></td>
+                        <td class="text-center"><?= esc($item['kondisi']) ?></td>
+                        <td class="text-center"><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($barang)) : ?>
-                        <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                Tidak ada data inventaris yang dapat ditampilkan.
-                            </td>
-                        </tr>
-                    <?php else : ?>
-                        <?php $no = 1; foreach ($barang as $item) : ?>
-                            <tr>
-                                <td class="text-center"><?= $no++ ?></td>
-                                <td class="font-monospace text-center"><?= esc($item['kode_barang']) ?></td>
-                                <td class="fw-semibold text-dark"><?= esc($item['nama_barang']) ?></td>
-                                <td><?= esc($item['nama_kategori']) ?></td>
-                                <td><?= esc($item['nama_lokasi']) ?></td>
-                                <td class="text-center fw-bold"><?= (int)$item['jumlah'] ?></td>
-                                <td class="text-center">
-                                    <?php if ($item['kondisi'] === 'Baik') : ?>
-                                        <span class="text-success fw-medium">Baik</span>
-                                    <?php elseif ($item['kondisi'] === 'Rusak Ringan') : ?>
-                                        <span class="text-warning fw-medium">Rusak Ringan</span>
-                                    <?php else : ?>
-                                        <span class="text-danger fw-medium">Rusak Berat</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center"><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
 
-        <!-- Lembar Pengesahan / Tanda Tangan -->
-        <div class="row pt-4 mt-4 text-center">
+        <div class="row pt-4 mt-4 text-center small">
             <div class="col-6">
-                <p class="small text-muted mb-5">Mengetahui,<br><strong>Kepala Laboratorium Komputer SI</strong></p>
-                <div class="mt-4">
-                    <div class="fw-bold text-dark text-decoration-underline">I Wayan Widi Pradnyana, M.TI</div>
-                    <div class="small text-muted">NIP. 198106252025211045</div>
-                </div>
+                <p class="mb-5">Mengetahui,<br><strong>Kepala Laboratorium Komputer</strong></p>
+                <div class="fw-bold text-dark text-decoration-underline">I Wayan Widi Pradnyana, M.TI</div>
+                <div class="text-muted">NIP. 198106252025211045</div>
             </div>
             <div class="col-6">
-                <p class="small text-muted mb-5">Jakarta, <?= esc($tanggalCetak) ?><br><strong>Petugas Pengelola Inventaris</strong></p>
-                <div class="mt-4">
-                    <div class="fw-bold text-dark text-decoration-underline">( <?= esc(session()->get('username') ?? 'Laboran Komputer') ?> )</div>
-                    <div class="small text-muted">Administrator Laboratorium</div>
-                </div>
+                <p class="mb-5">Jakarta, <?= esc($tanggalCetak) ?><br><strong>Petugas Pengelola Inventaris</strong></p>
+                <div class="fw-bold text-dark text-decoration-underline"><?= esc(session()->get('username') ?? 'Laboran Komputer') ?></div>
+                <div class="text-muted">Administrator Laboratorium</div>
             </div>
         </div>
     </div>

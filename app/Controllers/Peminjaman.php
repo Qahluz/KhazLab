@@ -2,9 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Models\PeminjamanModel;
+use App\Libraries\PeminjamanStatus;
 use App\Models\BarangModel;
+use App\Models\PeminjamanModel;
 
 class Peminjaman extends BaseController
 {
@@ -17,39 +17,44 @@ class Peminjaman extends BaseController
         $this->barangModel     = new BarangModel();
     }
 
-    /**
-     * Menampilkan daftar transaksi peminjaman dan pengembalian.
-     */
     public function index()
     {
-        $status = $this->request->getGet('status');
+        $status  = $this->request->getGet('status');
+        $keyword = trim((string) $this->request->getGet('keyword'));
+        $page    = (int) ($this->request->getGet('page') ?? 1);
+
+        $result = $this->peminjamanModel->getPeminjamanWithDetails([
+            'status'  => $status,
+            'keyword' => $keyword,
+            'page'    => $page,
+            'perPage' => 10,
+        ]);
 
         $data = [
             'title'          => 'Peminjaman & Pengembalian Barang',
-            'peminjaman'     => $this->peminjamanModel->getPeminjamanWithDetails($status),
+            'peminjaman'     => $result['rows'],
+            'pager'          => $result['pager'],
+            'total'          => $result['total'],
+            'keyword'        => $keyword,
             'selectedStatus' => $status,
+            'ringkasan'      => $this->peminjamanModel->getRingkasan(),
         ];
 
         return view('peminjaman/index', $data);
     }
 
-    /**
-     * Menampilkan formulir pencatatan peminjaman baru.
-     */
     public function create()
     {
         $data = [
             'title'      => 'Catat Peminjaman Barang Baru',
             'barang'     => $this->barangModel->getAvailableForLoan(),
             'validation' => session()->getFlashdata('validation') ?? \Config\Services::validation(),
+            'jatuhTempo' => PeminjamanStatus::defaultJatuhTempo(date('Y-m-d')),
         ];
 
         return view('peminjaman/create', $data);
     }
 
-    /**
-     * Menyimpan transaksi peminjaman baru dan memotong stok barang.
-     */
     public function store()
     {
         $rules = [
@@ -82,48 +87,44 @@ class Peminjaman extends BaseController
                     'valid_date' => 'Format tanggal peminjaman tidak valid.',
                 ],
             ],
+            'tanggal_jatuh_tempo' => [
+                'rules'  => 'required|valid_date',
+                'errors' => [
+                    'required'   => 'Tanggal jatuh tempo wajib diisi.',
+                    'valid_date' => 'Format tanggal jatuh tempo tidak valid.',
+                ],
+            ],
         ];
 
-        if (!$this->validate($rules)) {
+        if (! $this->validate($rules)) {
             return redirect()->to(base_url('peminjaman/tambah'))->withInput()->with('validation', $this->validator);
         }
 
-        $inputData = [
-            'id_barang'      => (int)$this->request->getPost('id_barang'),
-            'nama_peminjam'  => trim($this->request->getPost('nama_peminjam')),
-            'jumlah_pinjam'  => (int)$this->request->getPost('jumlah_pinjam'),
-            'tanggal_pinjam' => $this->request->getPost('tanggal_pinjam'),
-        ];
+        $result = $this->peminjamanModel->pinjamBarang([
+            'id_barang'           => (int) $this->request->getPost('id_barang'),
+            'nama_peminjam'       => trim((string) $this->request->getPost('nama_peminjam')),
+            'jumlah_pinjam'       => (int) $this->request->getPost('jumlah_pinjam'),
+            'tanggal_pinjam'      => (string) $this->request->getPost('tanggal_pinjam'),
+            'tanggal_jatuh_tempo' => (string) $this->request->getPost('tanggal_jatuh_tempo'),
+        ]);
 
-        $result = $this->peminjamanModel->pinjamBarang($inputData);
-
-        if (!$result['status']) {
+        if (! $result['status']) {
             return redirect()->to(base_url('peminjaman/tambah'))->withInput()->with('error', $result['message']);
         }
 
         return redirect()->to(base_url('peminjaman'))->with('success', $result['message']);
     }
 
-    /**
-     * Memproses pengembalian barang dan memulihkan stok barang.
-     */
     public function returnItem($id = null)
     {
-        if (!$id) {
+        if (! $id) {
             return redirect()->to(base_url('peminjaman'))->with('error', 'ID Transaksi peminjaman tidak valid.');
         }
 
-        $tanggalKembali = $this->request->getPost('tanggal_kembali');
-        if (empty($tanggalKembali)) {
-            $tanggalKembali = date('Y-m-d');
-        }
+        $tanggalKembali = (string) ($this->request->getPost('tanggal_kembali') ?: date('Y-m-d'));
 
-        $result = $this->peminjamanModel->kembalikanBarang($id, $tanggalKembali);
+        $result = $this->peminjamanModel->kembalikanBarang((int) $id, $tanggalKembali);
 
-        if (!$result['status']) {
-            return redirect()->to(base_url('peminjaman'))->with('error', $result['message']);
-        }
-
-        return redirect()->to(base_url('peminjaman'))->with('success', $result['message']);
+        return redirect()->to(base_url('peminjaman'))->with($result['status'] ? 'success' : 'error', $result['message']);
     }
 }

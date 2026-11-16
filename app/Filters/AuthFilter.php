@@ -8,32 +8,19 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class AuthFilter implements FilterInterface
 {
-    /**
-     * Memeriksa apakah pengguna sudah login sebelum memproses request ke rute admin.
-     *
-     * @param RequestInterface $request
-     * @param array|null       $arguments
-     *
-     * @return mixed
-     */
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (!session()->get('logged_in')) {
+        if (! session()->get('logged_in')) {
             return redirect()->to(base_url('login'))->with('error', 'Silakan login terlebih dahulu untuk mengakses sistem.');
+        }
+
+        $role = (string) session()->get('role');
+        if ($arguments !== null && $arguments !== [] && ! in_array($role, $arguments, true)) {
+            return redirect()->to(base_url('dashboard'))->with('error', 'Akun Anda tidak memiliki hak akses untuk halaman tersebut.');
         }
     }
 
-    /**
-     * Menjalankan aksi setelah controller selesai dieksekusi (opsional).
-     *
-     * @param RequestInterface  $request
-     * @param ResponseInterface $response
-     * @param array|null        $arguments
-     *
-     * @return mixed
-     */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        // Tidak ada aksi pasca eksekusi yang diperlukan
     }
 }

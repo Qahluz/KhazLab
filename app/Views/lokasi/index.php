@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-        <h1 class="h4 fw-bold mb-1">Daftar Lokasi Penyimpanan</h1>
-        <p class="text-muted small mb-0">Kelola ruangan dan tempat penempatan barang laboratorium</p>
+        <h2 class="h5 fw-bold mb-1 text-dark">Daftar Lokasi Penyimpanan</h2>
+        <p class="text-muted small mb-0">Kelola ruangan dan tempat penempatan perangkat laboratorium komputer.</p>
     </div>
     <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambah">
         <i class="bi bi-plus-lg"></i>
@@ -28,8 +28,11 @@
                     <?php if (empty($lokasi)) : ?>
                         <tr>
                             <td colspan="4" class="text-center py-4 text-muted">
-                                <i class="bi bi-geo fs-3 d-block mb-1 text-secondary"></i>
-                                Belum ada data lokasi. Silakan tambahkan lokasi baru.
+                                <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-geo-alt"></i></div>
+                                <h6>Belum ada lokasi</h6>
+                                <p>Tambahkan ruangan laboratorium pertama sebagai tempat penyimpanan aset.</p>
+                            </div>
                             </td>
                         </tr>
                     <?php else : ?>

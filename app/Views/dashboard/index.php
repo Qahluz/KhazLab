@@ -1,240 +1,184 @@
 <?= $this->extend('layout/main') ?>
 
 <?= $this->section('content') ?>
-<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-    <div>
-        <h1 class="h4 fw-bold mb-1">Ringkasan Sistem Inventaris</h1>
-        <p class="text-muted small mb-0">Informasi ringkas mengenai kondisi aset dan sirkulasi laboratorium komputer</p>
+<?php
+$totalAset = $ringkasan['total_aset'];
+$persenDipinjam = $totalAset > 0 ? round($ringkasan['dipinjam'] / $totalAset * 100) : 0;
+?>
+
+<div class="stat-grid">
+    <div class="stat-card" style="--stat-color:#1d4ed8; --stat-bg:#e0e9ff">
+        <i class="bi bi-boxes stat-icon"></i>
+        <div class="stat-label">Total Aset Fisik</div>
+        <div class="stat-value"><?= number_format($totalAset, 0, ',', '.') ?></div>
+        <div class="stat-hint"><?= $ringkasan['stok_tersedia'] ?> unit tersedia &middot; <?= $ringkasan['dipinjam'] ?> dipinjam</div>
     </div>
-    <div class="d-flex gap-2">
-        <a href="<?= base_url('barang/tambah') ?>" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
-            <i class="bi bi-plus-lg"></i>
-            <span>Tambah Barang</span>
-        </a>
-        <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
-            <i class="bi bi-arrow-left-right"></i>
-            <span>Peminjaman Baru</span>
-        </a>
+    <div class="stat-card" style="--stat-color:#0d9488; --stat-bg:#ccfbf1">
+        <i class="bi bi-archive stat-icon"></i>
+        <div class="stat-label">Stok Tersedia</div>
+        <div class="stat-value"><?= number_format($ringkasan['stok_tersedia'], 0, ',', '.') ?></div>
+        <div class="stat-hint">Dari <?= $ringkasan['total_jenis'] ?> jenis perangkat</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#b45309; --stat-bg:#fef3c7">
+        <i class="bi bi-arrow-left-right stat-icon"></i>
+        <div class="stat-label">Sedang Dipinjam</div>
+        <div class="stat-value"><?= $ringkasan['dipinjam'] ?></div>
+        <div class="stat-hint"><?= $persenDipinjam ?>% dari total aset</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#b91c1c; --stat-bg:#fee2e2">
+        <i class="bi bi-exclamation-octagon stat-icon"></i>
+        <div class="stat-label">Terlambat Kembali</div>
+        <div class="stat-value"><?= count($peminjamanTelat) ?></div>
+        <div class="stat-hint"><?= $ringkasanPinjam['kembali'] ?> transaksi selesai</div>
     </div>
 </div>
 
-<!-- 4 Kartu Metrik Utama -->
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="card-custom h-100 p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Jenis Barang</span>
-                    <h3 class="fw-bold my-1 text-dark"><?= number_format($totalJenisBarang) ?></h3>
-                    <span class="text-muted small"><i class="bi bi-collection me-1"></i>Katalog Aset</span>
-                </div>
-                <div class="bg-primary-subtle text-primary p-3 rounded-3 fs-4">
-                    <i class="bi bi-box-seam"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-xl-3">
-        <div class="card-custom h-100 p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Stok Tersedia</span>
-                    <h3 class="fw-bold my-1 text-success"><?= number_format($totalUnitBarang) ?></h3>
-                    <span class="text-muted small"><i class="bi bi-layers me-1"></i>Unit Tersedia</span>
-                </div>
-                <div class="bg-success-subtle text-success p-3 rounded-3 fs-4">
-                    <i class="bi bi-hdd-stack"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-xl-3">
-        <div class="card-custom h-100 p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Sedang Dipinjam</span>
-                    <h3 class="fw-bold my-1 text-warning"><?= number_format($totalSedangDipinjam) ?></h3>
-                    <span class="text-muted small"><i class="bi bi-clock-history me-1"></i>Unit di Luar Lab</span>
-                </div>
-                <div class="bg-warning-subtle text-warning p-3 rounded-3 fs-4">
-                    <i class="bi bi-arrow-repeat"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-xl-3">
-        <div class="card-custom h-100 p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Kategori & Lokasi</span>
-                    <h3 class="fw-bold my-1 text-info"><?= $totalKategori ?> / <?= $totalLokasi ?></h3>
-                    <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>Kelompok / Ruang</span>
-                </div>
-                <div class="bg-info-subtle text-info p-3 rounded-3 fs-4">
-                    <i class="bi bi-diagram-3"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <!-- Visualisasi Statistik Kondisi Barang -->
-    <div class="col-lg-5">
-        <div class="card-custom h-100">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span class="fw-bold"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Statistik Kondisi Barang</span>
-                <span class="badge bg-light text-dark border">Kondisi Fisik</span>
-            </div>
-            <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
-                <?php if ($totalJenisBarang == 0) : ?>
-                    <p class="text-muted small mb-0">Belum ada data barang untuk ditampilkan pada grafik.</p>
-                <?php else : ?>
-                    <div style="max-width: 250px; width: 100%;">
-                        <canvas id="kondisiChart"></canvas>
-                    </div>
-                    <div class="row w-100 mt-4 text-center g-2">
-                        <div class="col-4">
-                            <div class="p-2 rounded bg-light border">
-                                <span class="d-block text-success fw-bold fs-5"><?= $kondisiBaik ?></span>
-                                <span class="small text-muted">Baik</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="p-2 rounded bg-light border">
-                                <span class="d-block text-warning fw-bold fs-5"><?= $kondisiRusakRingan ?></span>
-                                <span class="small text-muted">Rusak Ringan</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="p-2 rounded bg-light border">
-                                <span class="d-block text-danger fw-bold fs-5"><?= $kondisiRusakBerat ?></span>
-                                <span class="small text-muted">Rusak Berat</span>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- Peringatan Stok Menipis -->
+<div class="row g-3">
     <div class="col-lg-7">
-        <div class="card-custom h-100">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span class="fw-bold"><i class="bi bi-exclamation-circle-fill me-2 text-warning"></i>Perhatian: Stok Kritis / Menipis</span>
-                <a href="<?= base_url('barang') ?>" class="small text-decoration-none">Kelola Barang</a>
+        <div class="card-custom">
+            <div class="card-header">
+                <span><i class="bi bi-graph-up me-1 text-primary"></i>Tren Peminjaman 6 Bulan Terakhir</span>
+                <a href="<?= base_url('dashboard/analitik') ?>" class="btn btn-sm btn-outline-primary">Analitik Lengkap</a>
             </div>
-            <div class="card-body p-0">
+            <div class="p-3">
+                <div class="chart-box"><canvas id="chartTren" aria-label="Grafik tren peminjaman" role="img"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card-custom">
+            <div class="card-header"><span><i class="bi bi-pie-chart me-1 text-primary"></i>Komposisi Kondisi Aset</span></div>
+            <div class="p-3">
+                <div class="chart-box" style="height:300px"><canvas id="chartKondisi" aria-label="Grafik komposisi kondisi aset" role="img"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-header">
+                <span><i class="bi bi-exclamation-triangle me-1 text-warning"></i>Stok Menipis (maks 3 unit)</span>
+                <a href="<?= base_url('barang') ?>" class="btn btn-sm btn-link text-decoration-none">Kelola</a>
+            </div>
+            <?php if (empty($barangStokMenipis)) : ?>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-check2-circle"></i></div>
+                    <h6>Stok aman</h6>
+                    <p>Tidak ada perangkat dengan stok di bawah ambang minimum.</p>
+                </div>
+            <?php else : ?>
                 <div class="table-responsive">
-                    <table class="table table-custom mb-0">
-                        <thead>
-                            <tr>
-                                <th>Barang</th>
-                                <th>Lokasi</th>
-                                <th class="text-center">Sisa Stok</th>
-                                <th class="text-center">Kondisi</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-custom align-middle">
+                        <thead><tr><th>Kode</th><th>Barang</th><th class="text-center">Stok</th><th>Lokasi</th></tr></thead>
                         <tbody>
-                            <?php if (empty($barangStokMenipis)) : ?>
-                                <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted small">
-                                        <i class="bi bi-check-circle fs-4 d-block mb-1 text-success"></i>
-                                        Seluruh stok barang dalam kondisi aman (di atas 2 unit).
-                                    </td>
-                                </tr>
-                            <?php else : ?>
-                                <?php foreach ($barangStokMenipis as $item) : ?>
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold text-dark"><?= esc($item['nama_barang']) ?></div>
-                                            <div class="small text-muted font-monospace"><?= esc($item['kode_barang']) ?></div>
-                                        </td>
-                                        <td class="small text-secondary"><?= esc($item['nama_lokasi']) ?></td>
-                                        <td class="text-center">
-                                            <span class="badge <?= ($item['jumlah'] == 0) ? 'bg-danger' : 'bg-warning text-dark' ?> px-2 py-1">
-                                                <?= (int)$item['jumlah'] ?> Unit
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if ($item['kondisi'] === 'Baik') : ?>
-                                                <span class="badge-kondisi-baik small">Baik</span>
-                                            <?php elseif ($item['kondisi'] === 'Rusak Ringan') : ?>
-                                                <span class="badge-kondisi-rusak-ringan small">Rusak Ringan</span>
-                                            <?php else : ?>
-                                                <span class="badge-kondisi-rusak-berat small">Rusak Berat</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                        <?php foreach ($barangStokMenipis as $item) : ?>
+                            <tr>
+                                <td class="mono"><?= esc($item['kode_barang']) ?></td>
+                                <td class="fw-semibold text-dark"><?= esc($item['nama_barang']) ?></td>
+                                <td class="text-center"><span class="badge-status-terlambat"><?= (int) $item['jumlah'] ?></span></td>
+                                <td class="text-muted small"><?= esc($item['nama_lokasi']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-header">
+                <span><i class="bi bi-tools me-1 text-danger"></i>Perangkat Rusak Berat</span>
+                <span class="badge-kondisi-rusak-berat"><?= count($barangRusakBerat) ?> unit</span>
             </div>
+            <?php if (empty($barangRusakBerat)) : ?>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-emoji-smile"></i></div>
+                    <h6>Semua perangkat berfungsi</h6>
+                    <p>Belum ada perangkat yang tercatat rusak berat.</p>
+                </div>
+            <?php else : ?>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead><tr><th>Kode</th><th>Barang</th><th>Kategori</th><th class="text-center">Unit</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($barangRusakBerat as $item) : ?>
+                            <tr>
+                                <td class="mono"><?= esc($item['kode_barang']) ?></td>
+                                <td class="fw-semibold text-dark"><?= esc($item['nama_barang']) ?></td>
+                                <td class="text-muted small"><?= esc($item['nama_kategori']) ?></td>
+                                <td class="text-center"><?= (int) $item['jumlah'] ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
-<!-- Tabel Transaksi Peminjaman Terkini -->
-<div class="card-custom">
-    <div class="card-header d-flex align-items-center justify-content-between">
-        <span class="fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Aktivitas Peminjaman Terkini</span>
-        <a href="<?= base_url('peminjaman') ?>" class="small text-decoration-none">Lihat Semua Transaksi</a>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-custom align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;" class="text-center">No</th>
-                        <th>Nama Peminjam</th>
-                        <th>Barang</th>
-                        <th style="width: 100px;" class="text-center">Jumlah</th>
-                        <th style="width: 130px;" class="text-center">Tgl Pinjam</th>
-                        <th style="width: 130px;" class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($peminjamanTerbaru)) : ?>
-                        <tr>
-                            <td colspan="6" class="text-center py-4 text-muted small">
-                                Belum ada riwayat transaksi peminjaman.
-                            </td>
-                        </tr>
-                    <?php else : ?>
-                        <?php $no = 1; foreach ($peminjamanTerbaru as $p) : ?>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card-custom">
+            <div class="card-header">
+                <span><i class="bi bi-clock-history me-1 text-primary"></i>Peminjaman Terbaru</span>
+                <a href="<?= base_url('peminjaman') ?>" class="btn btn-sm btn-link text-decoration-none">Lihat semua</a>
+            </div>
+            <?php if (empty($peminjamanTerbaru)) : ?>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                    <h6>Belum ada transaksi</h6>
+                    <p>Catat peminjaman pertama melalui menu Peminjaman.</p>
+                    <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary">Catat Peminjaman</a>
+                </div>
+            <?php else : ?>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead><tr><th>Peminjam</th><th>Barang</th><th>Jatuh Tempo</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($peminjamanTerbaru as $row) : ?>
+                            <?php $label = \App\Libraries\PeminjamanStatus::label($row); ?>
                             <tr>
-                                <td class="text-center fw-medium"><?= $no++ ?></td>
-                                <td class="fw-semibold text-dark"><?= esc($p['nama_peminjam']) ?></td>
-                                <td>
-                                    <div><?= esc($p['nama_barang']) ?></div>
-                                    <div class="small text-muted font-monospace"><?= esc($p['kode_barang']) ?></div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-light text-dark border px-2 py-1">
-                                        <?= (int)$p['jumlah_pinjam'] ?> Unit
-                                    </span>
-                                </td>
-                                <td class="text-center small text-muted">
-                                    <?= date('d/m/Y', strtotime($p['tanggal_pinjam'])) ?>
-                                </td>
-                                <td class="text-center">
-                                    <?php if ($p['status'] === 'Dipinjam') : ?>
-                                        <span class="badge-status-dipinjam small">Dipinjam</span>
-                                    <?php else : ?>
-                                        <span class="badge-status-kembali small">Kembali</span>
-                                    <?php endif; ?>
-                                </td>
+                                <td class="fw-semibold text-dark"><?= esc($row['nama_peminjam']) ?></td>
+                                <td class="small"><?= esc($row['nama_barang']) ?></td>
+                                <td class="small text-muted"><?= date('d/m/Y', strtotime($row['tanggal_jatuh_tempo'])) ?></td>
+                                <td><span class="<?= \App\Libraries\PeminjamanStatus::badgeClass($label) ?>"><?= $label ?></span></td>
                             </tr>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card-custom">
+            <div class="card-header"><span><i class="bi bi-alarm me-1 text-danger"></i>Peringatan Terlambat</span></div>
+            <?php if (empty($peminjamanTelat)) : ?>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-check2-circle"></i></div>
+                    <h6>Tidak ada keterlambatan</h6>
+                    <p>Semua peminjaman aktif masih dalam masa jatuh tempo.</p>
+                </div>
+            <?php else : ?>
+                <ul class="list-unstyled mb-0">
+                    <?php foreach ($peminjamanTelat as $row) : ?>
+                        <li class="d-flex align-items-start gap-2 p-3 border-bottom">
+                            <span class="badge-status-terlambat"><?= \App\Libraries\PeminjamanStatus::hariTerlambat($row) ?> hari</span>
+                            <div class="small">
+                                <div class="fw-semibold text-dark"><?= esc($row['nama_peminjam']) ?></div>
+                                <div class="text-muted"><?= esc($row['nama_barang']) ?> &middot; jatuh tempo <?= date('d/m/Y', strtotime($row['tanggal_jatuh_tempo'])) ?></div>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -243,34 +187,48 @@
 <?= $this->section('scripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-    <?php if ($totalJenisBarang > 0) : ?>
-    const ctx = document.getElementById('kondisiChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
+    const tren = <?= json_encode($trenPeminjaman) ?>;
+    const kondisi = <?= json_encode([$ringkasan['baik'], $ringkasan['rusak_ringan'], $ringkasan['rusak_berat']]) ?>;
+
+    const gridColor = 'rgba(148,163,184,.25)';
+    Chart.defaults.font.family = '"Segoe UI", system-ui, sans-serif';
+    Chart.defaults.color = '#64748b';
+
+    new Chart(document.getElementById('chartTren'), {
+        type: 'line',
         data: {
-            labels: ['Baik', 'Rusak Ringan', 'Rusak Berat'],
+            labels: tren.labels,
             datasets: [{
-                data: [<?= $kondisiBaik ?>, <?= $kondisiRusakRingan ?>, <?= $kondisiRusakBerat ?>],
-                backgroundColor: ['#16a34a', '#ca8a04', '#dc2626'],
-                borderWidth: 2,
-                borderColor: '#ffffff'
+                label: 'Transaksi peminjaman',
+                data: tren.data,
+                borderColor: '#1d4ed8',
+                backgroundColor: 'rgba(29,78,216,.12)',
+                fill: true,
+                tension: .35,
+                pointRadius: 4,
+                pointBackgroundColor: '#1d4ed8'
             }]
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        boxWidth: 12,
-                        padding: 15,
-                        font: { size: 12 }
-                    }
-                }
-            },
-            cutout: '70%'
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: gridColor } }, x: { grid: { display: false } } }
         }
     });
-    <?php endif; ?>
+
+    new Chart(document.getElementById('chartKondisi'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Baik', 'Rusak Ringan', 'Rusak Berat'],
+            datasets: [{ data: kondisi, backgroundColor: ['#16a34a', '#f59e0b', '#dc2626'], borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 14 } } }
+        }
+    });
 </script>
 <?= $this->endSection() ?>

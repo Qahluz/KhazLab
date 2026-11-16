@@ -8,17 +8,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #1e3a8a;
+            --primary-color: #1d4ed8;
             --primary-hover: #1e40af;
-            --bg-body: #f1f5f9;
+            --bg-body: #f5f7fb;
             --card-border: #e2e8f0;
             --text-heading: #0f172a;
             --text-muted: #64748b;
         }
 
         body {
-            background-color: var(--bg-body);
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(160deg, #0f172a 0%, #14213d 45%, #1d4ed8 160%);
+            font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -42,13 +42,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 48px;
-            height: 48px;
-            background-color: #eff6ff;
-            color: var(--primary-color);
-            border-radius: 10px;
+            width: 52px;
+            height: 52px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-radius: 12px;
             font-size: 1.5rem;
             margin-bottom: 1rem;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, .35);
         }
 
         .login-title {
@@ -134,8 +135,8 @@
         <div class="brand-badge">
             <i class="bi bi-box-seam"></i>
         </div>
-        <h1 class="login-title">SIM Inventaris Lab</h1>
-        <p class="login-subtitle">Sistem Pengelolaan Inventaris Laboratorium Komputer</p>
+        <h1 class="login-title">SIM-LAB</h1>
+        <p class="login-subtitle">Sistem Informasi Inventaris Laboratorium Komputer</p>
     </div>
 
     <!-- Alert Notifikasi Error -->
@@ -204,6 +205,11 @@
         </button>
     </form>
 
+    <div class="demo-box">
+        <div class="fw-semibold mb-1"><i class="bi bi-key me-1"></i>Akun demo</div>
+        <div>Username: <code>admin</code> &middot; Password: <code>admin123</code></div>
+        <div class="mt-1 text-muted">Percobaan login salah dibatasi 5 kali per 60 detik.</div>
+    </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

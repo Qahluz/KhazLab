@@ -100,8 +100,10 @@ class Lokasi extends BaseController
         try {
             $this->lokasiModel->delete($id);
             return redirect()->to(base_url('lokasi'))->with('success', 'Lokasi berhasil dihapus.');
-        } catch (\Throwable $e) {
-            return redirect()->to(base_url('lokasi'))->with('error', 'Lokasi tidak dapat dihapus karena masih digunakan sebagai tempat penyimpanan barang inventaris.');
+        } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+            log_message('info', 'Hapus lokasi ditolak constraint FK: {message}', ['message' => $e->getMessage()]);
+
+            return redirect()->to(base_url('lokasi'))->with('error', 'Lokasi tidak dapat dihapus karena masih digunakan sebagai tempat penyimpanan barang inventaris. Pindahkan barang ke lokasi lain terlebih dahulu.');
         }
     }
 }

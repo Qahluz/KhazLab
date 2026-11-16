@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-        <h1 class="h4 fw-bold mb-1">Daftar Kategori Barang</h1>
-        <p class="text-muted small mb-0">Kelola kelompok inventaris perangkat laboratorium</p>
+        <h2 class="h5 fw-bold mb-1 text-dark">Daftar Kategori Barang</h2>
+        <p class="text-muted small mb-0">Kelola kelompok inventaris perangkat laboratorium komputer.</p>
     </div>
     <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambah">
         <i class="bi bi-plus-lg"></i>
@@ -28,8 +28,11 @@
                     <?php if (empty($kategori)) : ?>
                         <tr>
                             <td colspan="4" class="text-center py-4 text-muted">
-                                <i class="bi bi-inbox fs-3 d-block mb-1 text-secondary"></i>
-                                Belum ada data kategori. Silakan tambahkan kategori baru.
+                                <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-tags"></i></div>
+                                <h6>Belum ada kategori</h6>
+                                <p>Tambahkan kategori pertama untuk mengelompokkan perangkat laboratorium.</p>
+                            </div>
                             </td>
                         </tr>
                     <?php else : ?>

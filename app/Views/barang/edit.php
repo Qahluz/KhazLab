@@ -80,7 +80,7 @@
 
                 <!-- Jumlah Stok -->
                 <div class="col-md-4">
-                    <label for="jumlah" class="form-label small fw-semibold">Jumlah Stok (Unit) <span class="text-danger">*</span></label>
+                    <label for="jumlah" class="form-label small fw-semibold">Stok Tersedia (Unit) <span class="text-danger">*</span></label>
                     <input type="number" 
                            class="form-control form-control-sm <?= (isset($validation) && $validation->hasError('jumlah')) ? 'is-invalid' : '' ?>" 
                            id="jumlah" 
@@ -90,6 +90,9 @@
                            required>
                     <?php if (isset($validation) && $validation->hasError('jumlah')) : ?>
                         <div class="invalid-feedback"><?= esc($validation->getError('jumlah')) ?></div>
+                    <?php endif; ?>
+                    <?php if (! empty($dipinjam)) : ?>
+                        <div class="form-text text-warning small"><i class="bi bi-info-circle me-1"></i><?= (int) $dipinjam ?> unit sedang dipinjam - stok tidak boleh di bawah angka ini.</div>
                     <?php endif; ?>
                 </div>
 

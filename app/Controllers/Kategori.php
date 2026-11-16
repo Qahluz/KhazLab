@@ -100,8 +100,10 @@ class Kategori extends BaseController
         try {
             $this->kategoriModel->delete($id);
             return redirect()->to(base_url('kategori'))->with('success', 'Kategori berhasil dihapus.');
-        } catch (\Throwable $e) {
-            return redirect()->to(base_url('kategori'))->with('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh data barang inventaris.');
+        } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+            log_message('info', 'Hapus kategori ditolak constraint FK: {message}', ['message' => $e->getMessage()]);
+
+            return redirect()->to(base_url('kategori'))->with('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh data barang inventaris. Pindahkan barang ke kategori lain terlebih dahulu.');
         }
     }
 }
