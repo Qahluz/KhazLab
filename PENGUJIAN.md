@@ -36,12 +36,14 @@ Lingkungan pengujian:
 | 17 | CSRF aktif di seluruh route POST | `php spark routes` + render form | LULUS |
 | 18 | Syntax seluruh file PHP aplikasi | `php -l` (78 file) | LULUS |
 | 19 | Layout cetak menyembunyikan navigasi | Emulasi media `print` | LULUS |
+| 19a | Label Stiker QR: tombol `QR Label` dirender untuk admin dan laboran, QR dibuat di browser dengan `qrcodejs` CDN, URL QR membuka tepat satu baris barang saat dipindai | Render HTML + eksekusi pustaka QR | LULUS |
+| 19b | Cetak stiker tidak mengganggu cetak laporan: seluruh aturan stiker dibatasi `body.qr-printing`, `khazlab.css` dan view laporan tidak berubah | Audit aturan CSS + render laporan | LULUS |
 | 20 | Layout responsif tanpa scroll horizontal | Chromium headless 1440px & 504px | LULUS |
 | 21 | Login Petugas Lab (`laboran` / `laboran123`) | HTTP | LULUS |
 | 22 | Petugas Lab dapat membaca data master dan mencatat peminjaman | HTTP | LULUS |
 | 23 | Petugas Lab diblokir dari mutasi master (`barang/tambah`, `barang/hapus`, `kategori/simpan`) dengan 303 + flash error | HTTP | LULUS |
 | 24 | Petugas Lab diblokir dari `POST demo/reset` (data tidak berubah) | HTTP + cek tabel | LULUS |
-| 25 | Tombol Tambah/Ubah/Hapus tidak dirender untuk Petugas Lab; badge role tampil | Chromium headless (DOM) | LULUS |
+| 25 | Tombol Tambah/Ubah/Hapus tidak dirender untuk Petugas Lab; tombol `QR Label` tetap ada; badge role tampil | Chromium headless (DOM) | LULUS |
 | 26 | Quick login mengisi kredensial dan berhasil masuk | Chromium headless (DOM) | LULUS |
 | 27 | Tombol Reset Data Demo (Kepala Lab) memulihkan data seed | HTTP + cek tabel | LULUS |
 | 28 | Auto-reset 24 jam: penanda baru tidak reset, penanda kedaluwarsa melakukan reset | HTTP + cek tabel | LULUS |
@@ -226,7 +228,8 @@ Diuji melalui HTTP nyata (`curl` dengan cookie jar terpisah) dan Chromium headle
 POST /login/auth  laboran/laboran123   -> 303 /dashboard   (LULUS)
 GET  /dashboard                        -> 200, badge "Petugas Lab" (2x: sidebar + topbar)
 GET  /barang                           -> 200, tombol ubah: 0, tombol hapus: 0, tautan barang/tambah: 0,
-                                          badge "Baca saja": 10 baris
+                                          tombol "QR Label" (read-only): 10
+GET  /barang?keyword=LAB-KRS-001       -> 200, 1 baris (URL yang dibuka oleh hasil pindai QR)
 GET  /barang/tambah                    -> 302 /barang        (diblokir sebelum render)
 POST /barang/hapus/1  (CSRF valid)     -> 303 -> /barang
      flash pada request berikutnya     -> "Akses ditolak: akun Petugas Lab tidak berwenang mengubah data master.

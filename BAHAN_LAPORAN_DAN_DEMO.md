@@ -228,6 +228,7 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Laporan hanya tabel HTML | Kop laboratorium, kolom tanda tangan, mode cetak, ekspor CSV | Siap diserahkan tanpa pengeditan manual |
 | Tidak ada penanda stok kritis | Widget stok menipis, rusak berat, terlambat | Masalah terlihat sebelum menjadi keluhan |
 | Data demo cepat kotor setelah dipakai | `DemoResetService` mengembalikan data seed otomatis tiap 24 jam + tombol reset manual | Demo publik selalu siap tanpa cron dan tanpa akses SSH |
+| Label aset diketik manual di kertas | Label Stiker QR per perangkat: tombol **QR Label** di setiap baris barang (admin maupun laboran) membuka modal stiker berisi kode barang, nama, kategori, dan lokasi; QR mengarah ke `barang?keyword=<kode_barang>` | Penomoran aset fisik konsisten dengan data, dan kamera HP penguji bisa langsung membuka perangkat yang dipindai |
 
 ### 5.4 UI/UX
 
@@ -262,12 +263,13 @@ Siapkan sebelumnya: server berjalan, database hasil import `database.sql`, brows
 | 0:45–1:05 | Tombol "Isi Akun Kepala Lab (Admin)", lalu Masuk | "Kredensial terisi otomatis tanpa salah ketik." |
 | 1:05–1:50 | Dashboard, lalu Analitik | "Kartu ini memisahkan total aset fisik dari stok tersedia. Grafik tengah komposisi kondisi, kanan tren peminjaman enam bulan, bawah unit yang sedang dipinjam." |
 | 1:50–2:35 | Menu Data Barang: ketik `monitor`, pilih kondisi `Baik`, ganti halaman | "Pencarian dan filter bekerja bersama, dan pagination dihitung di server." |
-| 2:35–3:20 | Tambah peminjaman 2 unit barang stok kecil, isi jatuh tempo | "Jatuh tempo terisi otomatis 7 hari ke depan. Stok dicek dan dikurangi dalam satu transaksi database." |
+| 2:35–2:55 | Klik **QR Label** pada satu baris barang, tunjukkan stiker di modal, lalu **Cetak Stiker** | "Label aset dibuat langsung di browser, jadi tidak perlu ekstensi PHP tambahan di hosting. QR mengarah ke hasil pencarian kode barang ini; saya cetak sebagai stiker ± 62 mm, dan hanya kartu stiker yang masuk ke kertas." |
+| 2:55–3:20 | Tutup modal, tambah peminjaman 2 unit barang stok kecil, isi jatuh tempo | "Jatuh tempo terisi otomatis 7 hari ke depan. Stok dicek dan dikurangi dalam satu transaksi database." |
 | 3:20–3:50 | Coba pinjam melebihi stok | "Ditolak dengan pesan yang menyebut sisa stok. Tidak ada baris peminjaman yang tercipta." |
 | 3:50–4:20 | Kembalikan transaksi tadi, lalu tekan kembalikan lagi | "Stok pulih. Percobaan pengembalian kedua ditolak karena statusnya bukan Dipinjam lagi, jadi stok tidak tergandakan." |
 | 4:20–4:45 | Hapus barang beriwayat | "Ditolak dengan pesan ramah, bukan halaman error framework. Data dan riwayatnya tetap aman." |
 | 4:45–5:00 | Laporan -> Cetak | "Kop laboratorium dan dua kolom tanda tangan siap dicetak atau diekspor ke CSV." |
-| 5:00–5:30 | Logout, tombol "Isi Akun Petugas Lab (Laboran)", login, buka Data Barang | "Badge Petugas Lab tampil. Tombol Tambah, Ubah, dan Hapus hilang; kolom aksi menampilkan Baca saja. Klik langsung `/barang/hapus/1` ditolak dengan redirect dan pesan berbahasa Indonesia." |
+| 5:00–5:30 | Logout, tombol "Isi Akun Petugas Lab (Laboran)", login, buka Data Barang | "Badge Petugas Lab tampil. Tombol Tambah, Ubah, dan Hapus hilang. Tombol **QR Label** tetap ada karena hanya membaca data. Klik langsung `/barang/hapus/1` ditolak dengan redirect dan pesan berbahasa Indonesia." |
 | 5:30–6:00 | Masih sebagai Petugas Lab: catat peminjaman baru | "Role ini tetap boleh melakukan transaksi; hanya master data yang terkunci." |
 
 Cadangan bila ada langkah gagal: `PENGUJIAN.md` memuat keluaran apa adanya untuk setiap skenario, sehingga dapat ditunjukkan tanpa menjalankan ulang.
