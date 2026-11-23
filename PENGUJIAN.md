@@ -11,7 +11,7 @@ Lingkungan pengujian:
 | MySQL | 8.0.30 |
 | Web server | `php spark serve --host 127.0.0.1 --port 8081` |
 | Database | `db_inventaris_lab` hasil import `database.sql` |
-| Tanggal pengujian | 16 November 2026 |
+| Tanggal pengujian | 16 November 2026 (skenario RBAC & auto-reset: 23 November 2026, server `--port 8095`) |
 
 ## Ringkasan Hasil
 
@@ -37,6 +37,15 @@ Lingkungan pengujian:
 | 18 | Syntax seluruh file PHP aplikasi | `php -l` (78 file) | LULUS |
 | 19 | Layout cetak menyembunyikan navigasi | Emulasi media `print` | LULUS |
 | 20 | Layout responsif tanpa scroll horizontal | Chromium headless 1440px & 504px | LULUS |
+| 21 | Login Petugas Lab (`laboran` / `laboran123`) | HTTP | LULUS |
+| 22 | Petugas Lab dapat membaca data master dan mencatat peminjaman | HTTP | LULUS |
+| 23 | Petugas Lab diblokir dari mutasi master (`barang/tambah`, `barang/hapus`, `kategori/simpan`) dengan 303 + flash error | HTTP | LULUS |
+| 24 | Petugas Lab diblokir dari `POST demo/reset` (data tidak berubah) | HTTP + cek tabel | LULUS |
+| 25 | Tombol Tambah/Ubah/Hapus tidak dirender untuk Petugas Lab; badge role tampil | Chromium headless (DOM) | LULUS |
+| 26 | Quick login mengisi kredensial dan berhasil masuk | Chromium headless (DOM) | LULUS |
+| 27 | Tombol Reset Data Demo (Kepala Lab) memulihkan data seed | HTTP + cek tabel | LULUS |
+| 28 | Auto-reset 24 jam: penanda baru tidak reset, penanda kedaluwarsa melakukan reset | HTTP + cek tabel | LULUS |
+| 29 | Berkas seed hilang tidak merusak halaman login (dicatat via `log_message`) | HTTP + cek log | LULUS |
 
 ## Detail dan Bukti
 
@@ -160,16 +169,17 @@ GET  dashboard                  | auth csrf
 GET  dashboard/analitik         | auth csrf
 GET  dashboard/export-csv       | auth csrf
 GET  kategori / lokasi / barang | auth csrf
-GET  barang/tambah, /edit/(n)   | auth csrf
+GET  barang/tambah, /edit/(n)   | auth csrf        (group auth:admin)
 GET  peminjaman, /tambah        | auth csrf
 GET  laporan, /cetak-peminjaman | auth csrf
 GET  laporan/export-csv         | auth csrf
 POST kategori/simpan|update|hapus, lokasi/simpan|update|hapus,
-     barang/simpan|update|hapus, peminjaman/simpan|kembalikan  | auth csrf
+     barang/simpan|update|hapus, demo/reset                    | auth csrf  (group auth:admin)
+POST peminjaman/simpan|kembalikan                               | auth csrf
 POST logout                     | csrf
 ```
 
-Seluruh 28 route terdaftar; semua route administrator memakai filter `auth` dan `csrf`, dan setiap form POST dirender dengan `csrf_field()`.
+Seluruh 29 route terdaftar; route baca & transaksi memakai filter `auth` (semua role login), sedangkan route mutasi master dan `demo/reset` memakai `auth:admin`. Setiap form POST dirender dengan `csrf_field()`.
 
 ### 18. Syntax PHP
 
@@ -208,6 +218,73 @@ confirm() bawaan    : 0 pemakaian
 
 Tangkapan layar: lihat folder [`docs/screenshots/`](docs/screenshots/).
 
+### 21–25. Multi-role RBAC (Kepala Lab vs Petugas Lab)
+
+Diuji melalui HTTP nyata (`curl` dengan cookie jar terpisah) dan Chromium headless.
+
+```text
+POST /login/auth  laboran/laboran123   -> 303 /dashboard   (LULUS)
+GET  /dashboard                        -> 200, badge "Petugas Lab" (2x: sidebar + topbar)
+GET  /barang                           -> 200, tombol ubah: 0, tombol hapus: 0, tautan barang/tambah: 0,
+                                          badge "Baca saja": 10 baris
+GET  /barang/tambah                    -> 302 /barang        (diblokir sebelum render)
+POST /barang/hapus/1  (CSRF valid)     -> 303 -> /barang
+     flash pada request berikutnya     -> "Akses ditolak: akun Petugas Lab tidak berwenang mengubah data master.
+                                            Hanya Kepala Lab yang dapat menambah, mengubah, atau menghapus data."
+POST /kategori/simpan (CSRF valid)     -> 303 -> halaman sebelumnya, jumlah kategori tetap 4
+POST /demo/reset      (CSRF valid)     -> 303 -> halaman sebelumnya, data tidak berubah
+GET  /peminjaman, /peminjaman/tambah   -> 200
+GET  /laporan, /laporan/cetak-peminjaman, /dashboard/analitik -> 200
+POST /peminjaman/simpan                -> "Peminjaman Access Point Ubiquiti UniFi U6-Lite berhasil dicatat.
+                                            Jatuh tempo 26/11/2026."
+```
+
+Catatan: CodeIgniter mengembalikan 302 untuk `GET` yang dialihkan dan 303 untuk `POST`; keduanya tidak mengeksekusi handler mutasi. Data master diverifikasi tidak berubah setelah request diblokir (kategori tetap 4 baris, barang tetap 14 baris).
+
+### 26. Quick login & badge Public Sandbox
+
+Chromium headless pada `/login`:
+
+```text
+judul kartu      : "Public Live Demo Environment"
+tombol           : "Isi Akun Kepala Lab (Admin)", "Isi Akun Petugas Lab (Laboran)"
+setelah klik     : username = laboran, password = laboran123, input password fokus
+submit           : berhasil masuk ke /dashboard
+meta             : "Reset otomatis setiap 24 jam."
+                   "Terakhir direset: 23/11/2026 22:57 WIB"
+                   "Jadwal reset berikutnya: 24/11/2026 22:57 WIB"
+overflow horizontal 1280px & 390px : 0
+console error / pageerror           : 0
+```
+
+### 27. Reset Data Demo manual (Kepala Lab)
+
+```text
+GET  /dashboard (admin)      -> tombol "Reset Data Demo" tampil (1 form POST /demo/reset + csrf_field)
+klik tombol                  -> modal khazlabConfirm() tampil, label "Ya, Reset Data"
+POST /demo/reset             -> 303 -> /dashboard
+flash                        -> "Data demo berhasil direset ke kondisi awal (19 perintah SQL dijalankan)."
+setelah reset                -> users=2, kategori=4, lokasi=4, barang=14, peminjaman=20
+writable/demo_last_reset.txt -> 1795449355 (epoch detik)
+```
+
+Saat pengujian pertama ditemukan kegagalan nyata `Cannot access protected property ...Connection::$DBDebug`; baris tersebut dihapus dari `DemoResetService` dan reset diulang hingga berhasil (bukti di atas).
+
+### 28–29. Auto-reset 24 jam
+
+```text
+1. Sisipkan baris kategori "TEMP-JUNK" (kategori = 5), penanda = sekarang
+   GET /login -> 200, kategori tetap 5            (belum 24 jam, reset dilewati)
+2. Penanda dimundurkan 120000 detik (25+ jam)
+   GET /login -> 200
+   kategori = 4, barang = 14, peminjaman = 20, users = 2   (reset otomatis berjalan)
+   penanda diperbarui = 1795449397 (now = 1795449399)
+3. Berkas app/Database/demo_seed.sql dipindahkan sementara, penanda dihapus
+   GET /login -> 200, kartu sandbox tetap tampil
+   log CI4: "Auto-reset data demo dilewati: Berkas seed demo tidak ditemukan ..."
+   berkas seed dikembalikan; halaman login tidak pernah crash
+```
+
 ## Temuan yang Diperbaiki Selama Pengujian
 
 | Temuan | Akar masalah | Perbaikan |
@@ -217,6 +294,8 @@ Tangkapan layar: lihat folder [`docs/screenshots/`](docs/screenshots/).
 | Hapus data berelasi memunculkan halaman error CI4 | `DatabaseException` tidak ditangkap | `try/catch DatabaseException` + pesan ramah + `log_message()` |
 | Rate limit login hilang saat proses PHP berganti | Disimpan di session | Tabel `login_attempts` per IP + pembersihan otomatis |
 | Stok bisa minus saat dua request bersamaan | Cek stok di PHP lalu update terpisah | `UPDATE ... WHERE jumlah >= ?` di dalam `transBegin()`/`transCommit()` |
+| Reset data demo selalu gagal (`Cannot access protected property ...::$DBDebug`) | Service mencoba menulis properti internal koneksi CI4 | Properti tidak disentuh lagi; SQL dieksekusi apa adanya lewat `$db->query()` |
+| Request Petugas Lab ke halaman mutasi memakai status 302/303 yang tidak konsisten | `redirect()->to()` mengikuti method asal | Diuji ulang: `POST` -> 303, `GET` -> 302, keduanya dengan flash error; handler mutasi tidak pernah dieksekusi |
 
 ## Cara Mengulang Pengujian
 
@@ -232,7 +311,7 @@ Get-ChildItem -Recurse app -Filter *.php | ForEach-Object { php -l $_.FullName }
 php spark routes
 ```
 
-Skenario 1–20 di atas dijalankan melalui HTTP nyata terhadap server tersebut (bukan unit test tiruan), sehingga hasilnya mencerminkan perilaku aplikasi yang dilihat pengguna.
+Skenario 1–20 di atas dijalankan melalui HTTP nyata terhadap server tersebut (bukan unit test tiruan), sehingga hasilnya mencerminkan perilaku aplikasi yang dilihat pengguna. Skenario 21–29 dijalankan pada 23 November 2026 dengan perintah yang sama (`php spark serve --port 8095`, `curl`, Chromium headless).
 
 ## Catatan Cakupan
 

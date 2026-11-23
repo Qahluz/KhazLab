@@ -1,6 +1,7 @@
 -- Sistem Informasi Inventaris Barang Laboratorium Komputer (Khazlab)
 -- Skema final: tabel users, kategori, lokasi, barang, peminjaman, login_attempts
--- Data dummy: 4 kategori, 4 lokasi, 14 barang, 20 transaksi peminjaman
+-- Data awal: 2 user (admin, laboran), 4 kategori, 4 lokasi, 14 barang, 20 peminjaman
+-- Import: mysql -u root -e "source database.sql"
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+07:00";
@@ -18,6 +19,9 @@ CREATE DATABASE IF NOT EXISTS `db_inventaris_lab`
 
 USE `db_inventaris_lab`;
 
+-- Seluruh isi database (struktur + data awal) identik dengan app/Database/demo_seed.sql,
+-- berkas yang dipakai DemoResetService untuk auto-reset 24 jam. Ubah keduanya bersamaan.
+
 DROP TABLE IF EXISTS `login_attempts`;
 DROP TABLE IF EXISTS `peminjaman`;
 DROP TABLE IF EXISTS `barang`;
@@ -32,16 +36,17 @@ CREATE TABLE `users` (
   `id_user` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin') NOT NULL DEFAULT 'admin',
+  `role` enum('admin','laboran') NOT NULL DEFAULT 'laboran',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id_user`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Akun default: username = admin | password = admin123
+-- Akun awal: admin / admin123 (Kepala Lab) dan laboran / laboran123 (Petugas Lab)
 INSERT INTO `users` (`id_user`, `username`, `password`, `role`, `created_at`, `updated_at`) VALUES
-(1, 'admin', '$2y$10$tmCuaQrRmcV9B28iEYh7Gu922Yi7bosaFDbOSV8OHMgEaFMe2XfAu', 'admin', '2026-08-01 09:00:00', '2026-08-01 09:00:00');
+(1, 'admin', '$2y$10$tmCuaQrRmcV9B28iEYh7Gu922Yi7bosaFDbOSV8OHMgEaFMe2XfAu', 'admin', '2026-08-01 09:00:00', '2026-08-01 09:00:00'),
+(2, 'laboran', '$2y$10$4LspUaHT9tCb8yMm/z4ZT.TKj..S20LJpIjQEqd/XxRlX2cuCPqga', 'laboran', '2026-08-01 09:00:00', '2026-08-01 09:00:00');
 
 -- ----------------------------------------------------------------------------
 -- 2. Tabel `kategori`

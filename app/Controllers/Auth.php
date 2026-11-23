@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Libraries\DemoResetService;
 use App\Models\UserModel;
+use Throwable;
 
 class Auth extends BaseController
 {
@@ -22,9 +24,19 @@ class Auth extends BaseController
             return redirect()->to(base_url('dashboard'));
         }
 
+        $demoReset = new DemoResetService();
+
+        try {
+            $demoReset->resetIfDue();
+        } catch (Throwable $e) {
+            log_message('error', 'Auto-reset data demo dilewati: ' . $e->getMessage());
+        }
+
         $data = [
-            'title'      => 'Login Administrator - Khazlab',
-            'validation' => session()->getFlashdata('validation') ?? \Config\Services::validation(),
+            'title'          => 'Login - Khazlab',
+            'validation'     => session()->getFlashdata('validation') ?? \Config\Services::validation(),
+            'demoLastReset'  => $demoReset->lastResetLabel(),
+            'demoNextReset'  => $demoReset->nextResetLabel(),
         ];
 
         return view('auth/login', $data);

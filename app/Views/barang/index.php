@@ -1,14 +1,17 @@
 <?= $this->extend('layout/main') ?>
 
 <?= $this->section('content') ?>
+<?php $isAdmin = session('role') === 'admin'; ?>
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     <div>
         <h2 class="h5 fw-bold mb-1 text-dark">Manajemen Data Barang</h2>
         <p class="text-muted small mb-0">Kelola seluruh perangkat laboratorium komputer beserta stok, lokasi, dan kondisinya.</p>
     </div>
+    <?php if ($isAdmin) : ?>
     <a href="<?= base_url('barang/tambah') ?>" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
         <i class="bi bi-plus-lg"></i><span>Tambah Barang</span>
     </a>
+    <?php endif; ?>
 </div>
 
 <div class="card-custom">
@@ -88,7 +91,9 @@
                             <p>Tidak ada data yang cocok dengan filter saat ini.</p>
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="<?= base_url('barang') ?>" class="btn btn-sm btn-outline-secondary">Reset Filter</a>
+                                <?php if ($isAdmin) : ?>
                                 <a href="<?= base_url('barang/tambah') ?>" class="btn btn-sm btn-primary">Tambah Barang</a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </td>
@@ -109,6 +114,7 @@
                         <td class="text-center"><span class="<?= $kelas ?>"><?= esc($item['kondisi']) ?></span></td>
                         <td class="text-center small text-muted"><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
                         <td class="text-center">
+                            <?php if ($isAdmin) : ?>
                             <div class="d-inline-flex gap-1">
                                 <a href="<?= base_url('barang/edit/' . $item['id_barang']) ?>" class="btn btn-sm btn-outline-primary" title="Ubah data">
                                     <i class="bi bi-pencil-square"></i>
@@ -120,6 +126,9 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
+                            <?php else : ?>
+                            <span class="badge bg-light text-secondary border">Baca saja</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

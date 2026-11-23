@@ -248,6 +248,11 @@ body {
 
 .chart-box { position: relative; height: 300px; }
 
+.badge-role-admin { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; font-weight: 600; }
+.badge-role-laboran { background: #dcfce7; color: #166534; border: 1px solid #86efac; font-weight: 600; }
+.sidebar-foot .badge-role-admin,
+.sidebar-foot .badge-role-laboran { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .28); color: #ffffff; font-size: .68rem; }
+
 .alert { border-radius: 10px; border-width: 1px; }
 
 .table-responsive { border-radius: 0; }

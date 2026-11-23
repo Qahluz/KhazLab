@@ -35,11 +35,11 @@ class KategoriModel extends Model
     ];
 
     /**
-     * Mengambil seluruh kategori beserta jumlah barang terkait.
+     * Mengambil seluruh kategori beserta total unit barang terkait.
      */
     public function getKategoriWithCount()
     {
-        return $this->select('kategori.*, COUNT(barang.id_barang) as total_barang')
+        return $this->select('kategori.*, COALESCE(SUM(barang.jumlah), 0) AS total_unit')
                     ->join('barang', 'barang.id_kategori = kategori.id_kategori', 'left')
                     ->groupBy('kategori.id_kategori')
                     ->orderBy('kategori.nama_kategori', 'ASC')

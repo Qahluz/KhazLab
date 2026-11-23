@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/khazlab.css') ?>">
 </head>
 <body>
+<?php
+$role        = (string) (session()->get('role') ?? 'laboran');
+$roleLabel   = $role === 'admin' ? 'Kepala Lab' : 'Petugas Lab';
+$roleBadge   = $role === 'admin' ? 'badge-role-admin' : 'badge-role-laboran';
+$roleIcon    = $role === 'admin' ? 'bi-shield-check' : 'bi-person-workspace';
+?>
 <aside id="sidebar" aria-label="Navigasi utama">
     <div class="brand">
         <span class="brand-mark"><i class="bi bi-cpu-fill"></i></span>
@@ -51,8 +57,8 @@
     <div class="sidebar-foot">
         <div class="avatar"><i class="bi bi-person-fill"></i></div>
         <div class="flex-grow-1 overflow-hidden">
-            <div class="fw-semibold text-white text-truncate small"><?= esc(session()->get('username') ?? 'Admin') ?></div>
-            <div class="text-white-50" style="font-size:.72rem">Administrator Lab</div>
+            <div class="fw-semibold text-white text-truncate small"><?= esc(session()->get('username') ?? '-') ?></div>
+            <span class="badge <?= $roleBadge ?> mt-1"><i class="bi <?= $roleIcon ?> me-1"></i><?= esc($roleLabel) ?></span>
         </div>
         <form action="<?= base_url('logout') ?>" method="post">
             <?= csrf_field() ?>
@@ -77,6 +83,16 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <span class="badge <?= $roleBadge ?> d-none d-sm-inline-flex align-items-center"><i class="bi <?= $roleIcon ?> me-1"></i><?= esc($roleLabel) ?></span>
+            <?php if ($role === 'admin') : ?>
+                <form action="<?= base_url('demo/reset') ?>" method="post" class="d-none d-lg-block">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1"
+                            data-confirm-reset>
+                        <i class="bi bi-arrow-counterclockwise"></i><span>Reset Data Demo</span>
+                    </button>
+                </form>
+            <?php endif; ?>
             <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary d-none d-md-inline-flex align-items-center gap-1">
                 <i class="bi bi-plus-lg"></i><span>Pinjam Barang</span>
             </a>
@@ -145,6 +161,17 @@
         ok.addEventListener('click', handler);
         modal.show();
     };
+
+    document.querySelectorAll('[data-confirm-reset]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            khazlabConfirm(
+                'Reset seluruh data demo ke kondisi awal? Semua perubahan (barang, kategori, lokasi, peminjaman) akan dihapus dan diganti data seed.',
+                () => button.form.submit(),
+                'Ya, Reset Data'
+            );
+        });
+    });
 </script>
 <?= $this->renderSection('scripts') ?>
 </body>

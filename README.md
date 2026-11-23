@@ -17,7 +17,10 @@ Project ini dibuat untuk memenuhi tugas **Praktikum Pemrograman Web Semester III
 
 | Modul | Fitur |
 |---|---|
-| Login | Autentikasi administrator, password hash bcrypt, session ID di-regenerate setelah login, pembatasan 5 percobaan gagal per 60 detik |
+| Login | Autentikasi multi-role (`admin`, `laboran`), password hash bcrypt, session ID di-regenerate setelah login, pembatasan 5 percobaan gagal per 60 detik |
+| Hak Akses (RBAC) | Kepala Lab (admin) akses penuh; Petugas Lab (laboran) hanya baca data master + transaksi peminjaman dan laporan. Badge role tampil di sidebar dan topbar. |
+| Public Sandbox | Kartu **Public Live Demo Environment** di halaman login: dua tombol isi-akun sekali klik dan informasi jadwal reset data demo |
+| Auto-Reset Demo | Data demo dikembalikan ke kondisi awal otomatis setiap 24 jam (dicek saat halaman login dibuka) + tombol **Reset Data Demo** manual untuk Kepala Lab |
 | Dashboard | Kartu statistik aset, tabel stok menipis/rusak berat/terlambat, peminjaman terkini, grafik ringkas |
 | Analitik | Total aset fisik vs stok tersedia, komposisi kondisi (Baik/Rusak Ringan/Rusak Berat), tren peminjaman 6 bulan, unit dipinjam per barang, ekspor CSV |
 | Data Barang | CRUD, pencarian kode/nama, filter kategori/lokasi/kondisi, pagination, validasi kode unik, proteksi stok di bawah unit yang dipinjam |
@@ -120,25 +123,34 @@ http://127.0.0.1:8081
 ### 5. Login
 
 ```text
+Kepala Lab (akses penuh)
 Username: admin
 Password: admin123
+
+Petugas Lab (akses terbatas)
+Username: laboran
+Password: laboran123
 ```
+
+Halaman login menyediakan kartu **Public Live Demo Environment** dengan tombol satu klik untuk mengisi kredensial di atas.
 
 ## Struktur Project
 
 ```text
 app/
 ├─ Config/          Konfigurasi CodeIgniter (Routes, App, Database, Filters, dll)
-├─ Controllers/     Auth, Dashboard, Barang, Kategori, Lokasi, Peminjaman, Laporan
+├─ Controllers/     Auth, Dashboard, Barang, Kategori, Lokasi, Peminjaman, Laporan, Demo
 ├─ Models/          BarangModel, KategoriModel, LokasiModel, PeminjamanModel, UserModel
-├─ Libraries/       PeminjamanStatus (label status, badge, jatuh tempo default)
+├─ Libraries/       PeminjamanStatus, DemoResetService (reset data demo 24 jam)
 ├─ Views/           Layout, auth, dashboard, barang, kategori, lokasi, peminjaman, laporan
-└─ Filters/         AuthFilter
+├─ Database/        demo_seed.sql (struktur + data awal untuk auto-reset)
+└─ Filters/         AuthFilter (login + pemeriksaan role)
 
 public/assets/css/  khazlab.css (tema laboratorium, dipakai semua halaman)
 
 docs/screenshots/   Tangkapan layar untuk laporan dan demo
-database.sql        Struktur database + data awal laboratorium
+database.sql        Struktur database + data awal (impor sekali, termasuk CREATE DATABASE)
+app/Database/demo_seed.sql  Struktur + data awal tanpa CREATE DATABASE/USE, dipakai auto-reset
 ```
 
 ## Skema Database
@@ -231,8 +243,35 @@ Kondisi `AND jumlah >= ?` membuat database sendiri yang menolak pengurangan bila
 - Password disimpan sebagai hash bcrypt.
 - Session ID di-regenerate setelah login berhasil.
 - Percobaan login dibatasi 5 kali gagal per alamat IP dalam 60 detik; blokir dicatat pada tabel `login_attempts` sehingga tetap berlaku lintas proses, dan dihapus otomatis setelah login berhasil.
-- Filter `auth` melindungi seluruh halaman administrator; role diperiksa melalui argumen filter.
+- Filter `auth` melindungi seluruh halaman administrator; role diperiksa melalui argumen filter (`auth:admin`).
 - Penghapusan data berelasi menangkap `DatabaseException` dan menampilkan pesan ramah, bukan halaman error CodeIgniter.
+
+## Hak Akses Multi-Role (RBAC)
+
+Kolom `users.role` bertipe `enum('admin','laboran')`. Filter `auth` menerima daftar role sebagai argumen; request yang tidak berwenang dihentikan dengan **HTTP 303** ke halaman sebelumnya (atau dashboard) disertai flash message berbahasa Indonesia.
+
+| Kemampuan | Kepala Lab (`admin`) | Petugas Lab (`laboran`) |
+|---|---|---|
+| Dashboard & Analitik (`dashboard`, `dashboard/analitik`, `dashboard/export-csv`) | Ya | Ya |
+| Baca data master (`barang`, `kategori`, `lokasi`) | Ya | Ya (tombol Tambah/Ubah/Hapus disembunyikan) |
+| Transaksi (`peminjaman`, `peminjaman/tambah`, `peminjaman/simpan`, `peminjaman/kembalikan`) | Ya | Ya |
+| Laporan (`laporan`, `laporan/cetak-peminjaman`, `laporan/export-csv`) | Ya | Ya |
+| Mutasi master (`barang/tambah`, `simpan`, `edit`, `update`, `hapus`; `kategori/*`; `lokasi/*`) | Ya | **Diblokir (303)** |
+| Reset data demo (`demo/reset`) | Ya | **Diblokir (303)** |
+
+Total 29 route terdaftar (`php spark routes`): 25 route lama + `POST demo/reset` dan pemisahan grup `auth` / `auth:admin` pada route yang sudah ada.
+
+## Auto-Reset Data Demo
+
+`app/Libraries/DemoResetService.php` menjaga data demo tetap bersih tanpa cron (kompatibel shared hosting seperti InfinityFree):
+
+1. Saat halaman login dibuka, service memeriksa penanda `writable/demo_last_reset.txt`.
+2. Jika penanda belum ada atau berumur **>= 86400 detik (24 jam)**, `app/Database/demo_seed.sql` dieksekusi.
+3. SQL dijalankan per statement melalui koneksi CodeIgniter (`$db->query()`), tanpa `exec()`/`shell_exec()`.
+4. Tabel `login_attempts` ikut dibuat ulang sehingga rate-limit lama terhapus bersamaan.
+5. Penanda diperbarui; bila berkas seed hilang, kegagalan dicatat lewat `log_message()` dan halaman login tetap tampil normal.
+
+Kepala Lab juga bisa memicu reset manual lewat tombol **Reset Data Demo** di topbar (POST + CSRF + modal `khazlabConfirm()`).
 
 ## Pengujian
 
@@ -283,7 +322,7 @@ CDN Bootstrap diblokir jaringan. Bootstrap, Bootstrap Icons, dan Chart.js dimuat
 ## Pengembangan Lanjutan (Opsional)
 
 - Pencatatan kondisi per unit barang, bukan satu kondisi untuk seluruh jumlah unit.
-- Role pengguna selain administrator (laboran, pimpinan) dengan hak akses berbeda.
+- Role tambahan (misalnya pimpinan) dengan akses baca laporan saja.
 - Export laporan ke PDF asli di sisi server (misalnya Dompdf), bukan hanya print browser.
 - Notifikasi surel otomatis untuk peminjaman yang mendekati jatuh tempo.
 - Automated test (PHPUnit) untuk alur login, CRUD, peminjaman, dan pengembalian.

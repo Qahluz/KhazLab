@@ -23,9 +23,9 @@ Khazlab mengelola inventaris Laboratorium Komputer: mencatat barang beserta kate
 | Framework | CodeIgniter 4.4.8 (pola MVC) |
 | Basis data | MySQL 8, 6 tabel, foreign key `ON DELETE RESTRICT` |
 | Front-end | Bootstrap 5.3.3, Bootstrap Icons, Chart.js 4.4.7 |
-| Autentikasi | Session + bcrypt + rate limiting 5 percobaan / 60 detik |
-| Proteksi aksi | CSRF token pada semua POST, konfirmasi via modal |
-| Jumlah route | 28 (12 GET halaman, 16 POST aksi) |
+| Autentikasi | Session + bcrypt + rate limiting 5 percobaan / 60 detik, multi-role (`admin`, `laboran`) |
+| Proteksi aksi | CSRF token pada semua POST, konfirmasi via modal, filter role pada route mutasi |
+| Jumlah route | 29 (16 GET, 13 POST) |
 
 ---
 
@@ -36,10 +36,10 @@ flowchart TD
     B[Browser] -->|HTTP request| R[Routes.php]
     R --> F[Filter: auth + csrf]
     F -->|lolos| C[Controller]
-    F -->|gagal| L[Halaman login / 403]
+    F -->|gagal| L["Login / 303 + flash error"]
     C --> M[Model]
     M --> DB[(MySQL db_inventaris_lab)]
-    C --> Lib[Library PeminjamanStatus]
+    C --> Lib[Library PeminjamanStatus / DemoResetService]
     C --> V[View + Layout]
     V --> B
 ```
@@ -49,10 +49,10 @@ Pembagian tanggung jawab:
 | Lapisan | Berkas | Tanggung jawab |
 |---|---|---|
 | Route | `app/Config/Routes.php` | Pemetaan URL ke controller, pemasangan filter `auth` dan `csrf` |
-| Filter | `app/Filters/AuthFilter.php` | Menolak akses tanpa sesi login; memeriksa role |
+| Filter | `app/Filters/AuthFilter.php` | Menolak akses tanpa sesi login; argumen filter menentukan role yang diizinkan (`auth` = semua role, `auth:admin` = Kepala Lab) |
 | Controller | `app/Controllers/*.php` | Validasi input, transaksi database, memilih view, flash message |
 | Model | `app/Models/*.php` | Query, join, agregasi dashboard, aturan validasi |
-| Library | `app/Libraries/PeminjamanStatus.php` | Label status, kelas badge, jatuh tempo default, ambang stok menipis |
+| Library | `app/Libraries/PeminjamanStatus.php`, `DemoResetService.php` | Label status, kelas badge, jatuh tempo default, ambang stok menipis; reset data demo otomatis 24 jam |
 | View | `app/Views/**` | Presentasi; layout tunggal `layout/main.php` |
 
 Alur satu request peminjaman:
@@ -205,6 +205,7 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Rate limiting login disimpan di session | Tabel `login_attempts` per alamat IP | Tetap berlaku lintas proses PHP dan tidak hilang saat sesi baru |
 | Konfirmasi memakai `confirm()` browser | Modal Bootstrap dengan label aksi berbahasa Indonesia | Konsisten dengan tema, tidak bisa dimatikan pengguna, aksesibel |
 | Error foreign key menjadi halaman crash CI4 | `try/catch DatabaseException` + pesan ramah | Pengguna paham penyebabnya; data terlindungi |
+| Satu role untuk semua pengguna | RBAC dua role: `admin` (Kepala Lab) dan `laboran` (Petugas Lab); route mutasi memakai `auth:admin` | Petugas lapangan tetap bisa mencatat peminjaman tanpa bisa mengubah master data |
 
 ### 5.2 Integritas data
 
@@ -226,6 +227,7 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Tidak ada dashboard analitik | Chart.js: aset vs stok, komposisi kondisi, tren 6 bulan, unit dipinjam | Mendukung keputusan pengadaan dan perawatan |
 | Laporan hanya tabel HTML | Kop laboratorium, kolom tanda tangan, mode cetak, ekspor CSV | Siap diserahkan tanpa pengeditan manual |
 | Tidak ada penanda stok kritis | Widget stok menipis, rusak berat, terlambat | Masalah terlihat sebelum menjadi keluhan |
+| Data demo cepat kotor setelah dipakai | `DemoResetService` mengembalikan data seed otomatis tiap 24 jam + tombol reset manual | Demo publik selalu siap tanpa cron dan tanpa akses SSH |
 
 ### 5.4 UI/UX
 
@@ -237,12 +239,15 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Tabel kosong tanpa keterangan | Empty state informatif + ajakan aksi | Tidak terkesan aplikasi rusak |
 | Tabel lebar memaksa scroll | Tabel responsif; tidak ada scroll horizontal di 504px | Tetap terpakai di laptop kecil |
 | Alert bawaan browser | Modal konfirmasi seragam | Pengalaman konsisten |
+| Halaman login tanpa informasi demo | Kartu **Public Live Demo Environment**: tombol isi-akun sekali klik, jadwal reset, waktu reset terakhir | Penguji dapat mencoba aplikasi dalam dua klik |
+| Role pengguna tidak terlihat | Badge `Kepala Lab` / `Petugas Lab` di sidebar dan topbar | Pengguna tahu hak aksesnya sendiri |
 
 ### 5.5 Kualitas kode
 
 - Validasi aturan barang dipusatkan: model menyediakan aturan dasar, controller menambah pengecualian id saat update. Sebelumnya, aturan `is_unique` tanpa interpolasi membuat **semua** edit barang gagal.
 - Logika status dipindahkan ke `app/Libraries/PeminjamanStatus.php`, sehingga label badge dan perhitungan keterlambatan tidak diduplikasi di beberapa view.
 - `downloadCsv()` dipusatkan di `BaseController`, sehingga ekspor laporan dan analitik memakai mekanisme yang sama (BOM UTF-8 + stream).
+- Pemeriksaan role cukup di satu titik (filter) dan view hanya membaca `session('role')` untuk menyembunyikan tombol; tidak ada duplikasi logika otorisasi di controller.
 
 ---
 
@@ -252,9 +257,9 @@ Siapkan sebelumnya: server berjalan, database hasil import `database.sql`, brows
 
 | Waktu | Langkah | Yang dikatakan |
 |---|---|---|
-| 0:00–0:20 | Buka halaman login | "Khazlab mengelola inventaris Laboratorium Komputer. Login memakai sesi, password bcrypt, dan pembatasan 5 percobaan gagal per 60 detik." |
-| 0:20–0:45 | Salah password 6 kali | "Percobaan ke-6 diblokir. Penghitungnya disimpan di database, jadi tidak hilang walau sesi berganti." |
-| 0:45–1:05 | Login `admin` / `admin123` | "Setelah berhasil, penghitung otomatis dibersihkan." |
+| 0:00–0:20 | Buka halaman login | "Khazlab mengelola inventaris Laboratorium Komputer. Login memakai sesi, password bcrypt, dan pembatasan 5 percobaan gagal per 60 detik. Kartu hitam ini sandbox publik: dua tombol mengisi akun demo sekali klik." |
+| 0:20–0:45 | Sorot kartu Public Live Demo Environment | "Ada dua role: Kepala Lab dengan akses penuh dan Petugas Lab yang hanya membaca data master. Data demo direset otomatis setiap 24 jam, dan di sini terlihat waktu reset terakhir serta jadwal berikutnya." |
+| 0:45–1:05 | Tombol "Isi Akun Kepala Lab (Admin)", lalu Masuk | "Kredensial terisi otomatis tanpa salah ketik." |
 | 1:05–1:50 | Dashboard, lalu Analitik | "Kartu ini memisahkan total aset fisik dari stok tersedia. Grafik tengah komposisi kondisi, kanan tren peminjaman enam bulan, bawah unit yang sedang dipinjam." |
 | 1:50–2:35 | Menu Data Barang: ketik `monitor`, pilih kondisi `Baik`, ganti halaman | "Pencarian dan filter bekerja bersama, dan pagination dihitung di server." |
 | 2:35–3:20 | Tambah peminjaman 2 unit barang stok kecil, isi jatuh tempo | "Jatuh tempo terisi otomatis 7 hari ke depan. Stok dicek dan dikurangi dalam satu transaksi database." |
@@ -262,6 +267,8 @@ Siapkan sebelumnya: server berjalan, database hasil import `database.sql`, brows
 | 3:50–4:20 | Kembalikan transaksi tadi, lalu tekan kembalikan lagi | "Stok pulih. Percobaan pengembalian kedua ditolak karena statusnya bukan Dipinjam lagi, jadi stok tidak tergandakan." |
 | 4:20–4:45 | Hapus barang beriwayat | "Ditolak dengan pesan ramah, bukan halaman error framework. Data dan riwayatnya tetap aman." |
 | 4:45–5:00 | Laporan -> Cetak | "Kop laboratorium dan dua kolom tanda tangan siap dicetak atau diekspor ke CSV." |
+| 5:00–5:30 | Logout, tombol "Isi Akun Petugas Lab (Laboran)", login, buka Data Barang | "Badge Petugas Lab tampil. Tombol Tambah, Ubah, dan Hapus hilang; kolom aksi menampilkan Baca saja. Klik langsung `/barang/hapus/1` ditolak dengan redirect dan pesan berbahasa Indonesia." |
+| 5:30–6:00 | Masih sebagai Petugas Lab: catat peminjaman baru | "Role ini tetap boleh melakukan transaksi; hanya master data yang terkunci." |
 
 Cadangan bila ada langkah gagal: `PENGUJIAN.md` memuat keluaran apa adanya untuk setiap skenario, sehingga dapat ditunjukkan tanpa menjalankan ulang.
 
@@ -287,11 +294,14 @@ Hanya satu yang berhasil. Request kedua mendapat pesan stok tidak mencukupi kare
 **Bagaimana keamanan CSRF diuji?**
 Dari `php spark routes`, seluruh route POST memakai filter `csrf`, dan setiap form dirender dengan `csrf_field()`. Request POST tanpa token ditolak framework.
 
-**Apakah sudah ada automated test?**
-Belum. Pengujian dilakukan lewat skrip HTTP terhadap server sungguhan dan hasilnya didokumentasikan apa adanya di `PENGUJIAN.md`, termasuk batas cakupannya.
+**Bagaimana RBAC ditegakkan?**
+Di level route: filter `auth:admin` hanya mengizinkan role `admin` pada route mutasi master dan `demo/reset`; request lain dihentikan dengan 303 (POST) plus flash message. Di level tampilan: tombol Tambah/Ubah/Hapus hanya dirender bila `session('role') === 'admin'`. Menembak URL langsung tetap diblokir filter, jadi bukan sekadar sembunyi tombol.
+
+**Mengapa reset demo tidak memakai cron?**
+Shared hosting seperti InfinityFree tidak menyediakan cron. Reset dijalankan saat halaman login dibuka apabila `writable/demo_last_reset.txt` belum ada atau sudah berumur 24 jam, sehingga tidak butuh scheduler maupun SSH.
 
 **Apa keterbatasan aplikasi saat ini?**
-Satu role (administrator), kondisi barang berlaku untuk seluruh unit dalam satu baris, ekspor PDF memakai print browser, belum ada notifikasi jatuh tempo, dan pembatasan login per IP sehingga pengguna di balik satu NAT berbagi kuota.
+Dua role tetap (`admin`, `laboran`), kondisi barang berlaku untuk seluruh unit dalam satu baris, ekspor PDF memakai print browser, belum ada notifikasi jatuh tempo, dan pembatasan login per IP sehingga pengguna di balik satu NAT berbagi kuota.
 
 ---
 
@@ -300,6 +310,7 @@ Satu role (administrator), kondisi barang berlaku untuk seluruh unit dalam satu 
 | Berkas | Isi |
 |---|---|
 | `README.md` | Instalasi, konfigurasi, struktur, keamanan, troubleshooting |
-| `PENGUJIAN.md` | 20 skenario beserta keluaran nyata dan temuan yang diperbaiki |
-| `database.sql` | Skema + data contoh laboratorium (14 barang, 20 peminjaman) |
+| `PENGUJIAN.md` | 29 skenario beserta keluaran nyata dan temuan yang diperbaiki |
+| `database.sql` | Skema + data contoh laboratorium (14 barang, 20 peminjaman, 2 akun role) |
+| `app/Database/demo_seed.sql` | Skema + data yang sama tanpa `CREATE DATABASE`/`USE`, dipakai auto-reset di shared hosting |
 | `docs/screenshots/` | Tangkapan layar login, dashboard, analitik, barang, peminjaman, cetak |

@@ -1,15 +1,18 @@
 <?= $this->extend('layout/main') ?>
 
 <?= $this->section('content') ?>
+<?php $isAdmin = session('role') === 'admin'; ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
         <h2 class="h5 fw-bold mb-1 text-dark">Daftar Lokasi Penyimpanan</h2>
         <p class="text-muted small mb-0">Kelola ruangan dan tempat penempatan perangkat laboratorium komputer.</p>
     </div>
+    <?php if ($isAdmin) : ?>
     <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambah">
         <i class="bi bi-plus-lg"></i>
         <span>Tambah Lokasi</span>
     </button>
+    <?php endif; ?>
 </div>
 
 <div class="card-custom">
@@ -45,10 +48,11 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border px-2 py-1">
-                                        <i class="bi bi-box-seam me-1"></i><?= (int)$item['total_barang'] ?> Unit
+                                        <i class="bi bi-box-seam me-1"></i><?= (int)$item['total_unit'] ?> Unit
                                     </span>
                                 </td>
                                 <td class="text-center">
+                                    <?php if ($isAdmin) : ?>
                                     <div class="btn-group btn-group-sm" role="group">
                                         <button type="button" 
                                                 class="btn btn-outline-primary btn-edit" 
@@ -61,11 +65,14 @@
                                                 class="btn btn-outline-danger btn-delete" 
                                                 data-id="<?= $item['id_lokasi'] ?>" 
                                                 data-nama="<?= esc($item['nama_lokasi']) ?>" 
-                                                data-total="<?= (int)$item['total_barang'] ?>"
+                                                data-total="<?= (int)$item['total_unit'] ?>"
                                                 title="Hapus Lokasi">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
+                                    <?php else : ?>
+                                    <span class="badge bg-light text-secondary border">Baca saja</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

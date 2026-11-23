@@ -124,8 +124,8 @@ $kondisiBerat = $ringkasan['rusak_berat'];
 <script>
     const tren = <?= json_encode($tren) ?>;
     const kondisi = <?= json_encode([$kondisiBaik, $kondisiRingan, $kondisiBerat]) ?>;
-    const kategori = <?= json_encode(['labels' => array_column($kategori, 'nama_kategori'), 'data' => array_map('intval', array_column($kategori, 'total_barang'))]) ?>;
-    const lokasi = <?= json_encode(['labels' => array_column($lokasi, 'nama_lokasi'), 'data' => array_map('intval', array_column($lokasi, 'total_barang'))]) ?>;
+    const kategori = <?= json_encode(['labels' => array_column($kategori, 'nama_kategori'), 'data' => array_map('intval', array_column($kategori, 'total_unit'))]) ?>;
+    const lokasi = <?= json_encode(['labels' => array_column($lokasi, 'nama_lokasi'), 'data' => array_map('intval', array_column($lokasi, 'total_unit'))]) ?>;
 
     Chart.defaults.font.family = '"Segoe UI", system-ui, sans-serif';
     Chart.defaults.color = '#64748b';
@@ -159,14 +159,14 @@ $kondisiBerat = $ringkasan['rusak_berat'];
 
     new Chart(document.getElementById('chartKategori'), {
         type: 'bar',
-        data: { labels: kategori.labels, datasets: [{ label: 'Jenis barang', data: kategori.data, backgroundColor: 'rgba(13,148,136,.8)', borderRadius: 6, maxBarThickness: 38 }] },
+        data: { labels: kategori.labels, datasets: [{ label: 'Unit', data: kategori.data, backgroundColor: 'rgba(13,148,136,.8)', borderRadius: 6, maxBarThickness: 38 }] },
         options: baseBar
     });
 
     new Chart(document.getElementById('chartLokasi'), {
         type: 'bar',
         data: { labels: lokasi.labels, datasets: [{ label: 'Unit', data: lokasi.data, backgroundColor: 'rgba(124,58,237,.8)', borderRadius: 6, maxBarThickness: 38 }] },
-        options: { ...baseBar, indexAxis: 'y' }
+        options: { ...baseBar, indexAxis: 'y', scales: { ...baseBar.scales, x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: gridColor } }, y: { grid: { display: false } } } }
     });
 </script>
 <?= $this->endSection() ?>

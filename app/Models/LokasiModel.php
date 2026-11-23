@@ -35,11 +35,11 @@ class LokasiModel extends Model
     ];
 
     /**
-     * Mengambil seluruh lokasi beserta jumlah barang yang disimpan di lokasi tersebut.
+     * Mengambil seluruh lokasi beserta total unit barang yang tersimpan di lokasi tersebut.
      */
     public function getLokasiWithCount()
     {
-        return $this->select('lokasi.*, COUNT(barang.id_barang) as total_barang')
+        return $this->select('lokasi.*, COALESCE(SUM(barang.jumlah), 0) AS total_unit')
                     ->join('barang', 'barang.id_lokasi = lokasi.id_lokasi', 'left')
                     ->groupBy('lokasi.id_lokasi')
                     ->orderBy('lokasi.nama_lokasi', 'ASC')
