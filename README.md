@@ -30,6 +30,7 @@ Project ini dibuat untuk memenuhi tugas **Praktikum Pemrograman Web Semester III
 | Peminjaman | Pencatatan peminjaman dengan tanggal jatuh tempo otomatis, pengurangan stok atomik dalam transaksi database, filter status/pencarian, pagination |
 | Pengembalian | Pemulihan stok otomatis, idempoten (tidak menambah stok dua kali), modal konfirmasi |
 | Status Otomatis | Badge `Dipinjam`, `Terlambat / Overdue`, `Kembali` dihitung dari tanggal jatuh tempo |
+| Pengingat WhatsApp | Tombol **Ingatkan** (`bi-whatsapp`) pada setiap baris berstatus `Dipinjam`/`Terlambat` untuk admin maupun laboran; membuka `https://wa.me/?text=…` berisi pesan siap kirim atas nama peminjam, lengkap dengan nama barang, kode barang, jumlah unit, dan tanggal jatuh tempo format `dd/mm/YYYY`. Transaksi `Kembali` tidak menampilkan tombol. Template pesan dibedakan otomatis: tegas ("telah MELEWATI jatuh tempo") bila terlambat, dan informatif bila belum jatuh tempo. URL disusun `PeminjamanStatus::buildWhatsappReminderUrl()` dengan `rawurlencode()` sehingga spasi menjadi `%20`, bukan `+`. |
 | Laporan | Rekap inventaris dengan filter lokasi/kondisi, kop laboratorium, kolom tanda tangan, mode cetak, ekspor CSV |
 | Keamanan Aksi | Seluruh aksi ubah/hapus memakai POST + CSRF token, konfirmasi melalui modal (bukan `confirm()` browser) |
 

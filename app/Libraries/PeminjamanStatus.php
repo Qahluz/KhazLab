@@ -35,6 +35,26 @@ class PeminjamanStatus
         return (int) floor((strtotime($today ?? date('Y-m-d')) - strtotime($row['tanggal_jatuh_tempo'])) / 86400);
     }
 
+    public static function buildWhatsappReminderUrl(array $row, ?string $today = null): string
+    {
+        $tglPinjam = date('d/m/Y', strtotime($row['tanggal_pinjam']));
+        $tglTempo  = date('d/m/Y', strtotime($row['tanggal_jatuh_tempo']));
+        $aset      = $row['nama_barang'] . ' [' . $row['kode_barang'] . ']';
+
+        if (self::label($row, $today) === 'Terlambat') {
+            $pesan = 'Halo ' . $row['nama_peminjam'] . ', mengingatkan bahwa peminjaman aset Laboratorium Komputer Khazlab ('
+                . $aset . ' sebanyak ' . (int) $row['jumlah_pinjam'] . ' unit, tgl pinjam ' . $tglPinjam
+                . ') telah MELEWATI jatuh tempo pada ' . $tglTempo
+                . '. Mohon segera dikembalikan ke laboratorium. Terima kasih.';
+        } else {
+            $pesan = 'Halo ' . $row['nama_peminjam'] . ', pengingat peminjaman aset Laboratorium Komputer Khazlab: '
+                . $aset . ' sebanyak ' . (int) $row['jumlah_pinjam'] . ' unit (tgl pinjam ' . $tglPinjam
+                . ') memiliki jadwal jatuh tempo pengembalian pada ' . $tglTempo . '. Terima kasih.';
+        }
+
+        return 'https://wa.me/?text=' . rawurlencode($pesan);
+    }
+
     public static function badgeClass(string $label): string
     {
         return match ($label) {

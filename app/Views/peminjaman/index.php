@@ -132,6 +132,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($row['status'] === 'Dipinjam') : ?>
+                                <a href="<?= esc(\App\Libraries\PeminjamanStatus::buildWhatsappReminderUrl($row), 'attr') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success" title="Kirim pengingat jatuh tempo via WhatsApp"><i class="bi bi-whatsapp"></i> Ingatkan</a>
                                 <button type="button" class="btn btn-sm btn-outline-success btn-kembalikan"
                                         data-id="<?= $row['id_peminjaman'] ?>"
                                         data-nama="<?= esc($row['nama_peminjam']) ?>"

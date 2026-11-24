@@ -52,7 +52,7 @@ Pembagian tanggung jawab:
 | Filter | `app/Filters/AuthFilter.php` | Menolak akses tanpa sesi login; argumen filter menentukan role yang diizinkan (`auth` = semua role, `auth:admin` = Kepala Lab) |
 | Controller | `app/Controllers/*.php` | Validasi input, transaksi database, memilih view, flash message |
 | Model | `app/Models/*.php` | Query, join, agregasi dashboard, aturan validasi |
-| Library | `app/Libraries/PeminjamanStatus.php`, `DemoResetService.php` | Label status, kelas badge, jatuh tempo default, ambang stok menipis; reset data demo otomatis 24 jam |
+| Library | `app/Libraries/PeminjamanStatus.php`, `DemoResetService.php` | Label status, kelas badge, jatuh tempo default, ambang stok menipis, tautan pengingat WhatsApp; reset data demo otomatis 24 jam |
 | View | `app/Views/**` | Presentasi; layout tunggal `layout/main.php` |
 
 Alur satu request peminjaman:
@@ -227,6 +227,7 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Tidak ada dashboard analitik | Chart.js: aset vs stok, komposisi kondisi, tren 6 bulan, unit dipinjam | Mendukung keputusan pengadaan dan perawatan |
 | Laporan hanya tabel HTML | Kop laboratorium, kolom tanda tangan, mode cetak, ekspor CSV | Siap diserahkan tanpa pengeditan manual |
 | Tidak ada penanda stok kritis | Widget stok menipis, rusak berat, terlambat | Masalah terlihat sebelum menjadi keluhan |
+| Tidak ada cara mengejar peminjam yang terlambat | Tombol **Ingatkan** membuka WhatsApp dengan pesan siap kirim (template beda untuk `Dipinjam` dan `Terlambat`, tanggal `dd/mm/YYYY`); URL disusun `PeminjamanStatus::buildWhatsappReminderUrl()` dengan `rawurlencode()` | Pengingat terkirim dalam dua klik tanpa mengetik ulang data aset, dan tanpa biaya API pesan |
 | Data demo cepat kotor setelah dipakai | `DemoResetService` mengembalikan data seed otomatis tiap 24 jam + tombol reset manual | Demo publik selalu siap tanpa cron dan tanpa akses SSH |
 | Label aset diketik manual di kertas | Label Stiker QR per perangkat: tombol **QR Label** di setiap baris barang (admin maupun laboran) membuka modal stiker berisi kode barang, nama, kategori, dan lokasi; QR mengarah ke `barang?keyword=<kode_barang>` | Penomoran aset fisik konsisten dengan data, dan kamera HP penguji bisa langsung membuka perangkat yang dipindai |
 
@@ -264,9 +265,10 @@ Siapkan sebelumnya: server berjalan, database hasil import `database.sql`, brows
 | 1:05–1:50 | Dashboard, lalu Analitik | "Kartu ini memisahkan total aset fisik dari stok tersedia. Grafik tengah komposisi kondisi, kanan tren peminjaman enam bulan, bawah unit yang sedang dipinjam." |
 | 1:50–2:35 | Menu Data Barang: ketik `monitor`, pilih kondisi `Baik`, ganti halaman | "Pencarian dan filter bekerja bersama, dan pagination dihitung di server." |
 | 2:35–2:55 | Klik **QR Label** pada satu baris barang, tunjukkan stiker di modal, lalu **Cetak Stiker** | "Label aset dibuat langsung di browser, jadi tidak perlu ekstensi PHP tambahan di hosting. QR mengarah ke hasil pencarian kode barang ini; saya cetak sebagai stiker ± 62 mm, dan hanya kartu stiker yang masuk ke kertas." |
-| 2:55–3:20 | Tutup modal, tambah peminjaman 2 unit barang stok kecil, isi jatuh tempo | "Jatuh tempo terisi otomatis 7 hari ke depan. Stok dicek dan dikurangi dalam satu transaksi database." |
-| 3:20–3:50 | Coba pinjam melebihi stok | "Ditolak dengan pesan yang menyebut sisa stok. Tidak ada baris peminjaman yang tercipta." |
-| 3:50–4:20 | Kembalikan transaksi tadi, lalu tekan kembalikan lagi | "Stok pulih. Percobaan pengembalian kedua ditolak karena statusnya bukan Dipinjam lagi, jadi stok tidak tergandakan." |
+| 2:55–3:20 | Tutup modal, buka menu Peminjaman, klik **Ingatkan** pada satu baris berstatus *Terlambat* | "Tombol ini membuka WhatsApp dengan pesan yang sudah jadi: nama peminjam, perangkat beserta kode asetnya, jumlah unit, dan tanggal jatuh tempo. Kalimatnya tegas karena sudah lewat jatuh tempo. Untuk transaksi yang sudah kembali, tombol ini tidak muncul." |
+| 3:20–3:40 | Kembali ke Data Barang, tambah peminjaman 2 unit barang stok kecil, isi jatuh tempo | "Jatuh tempo terisi otomatis 7 hari ke depan. Stok dicek dan dikurangi dalam satu transaksi database." |
+| 3:40–4:00 | Coba pinjam melebihi stok | "Ditolak dengan pesan yang menyebut sisa stok. Tidak ada baris peminjaman yang tercipta." |
+| 4:00–4:20 | Kembalikan transaksi tadi, lalu tekan kembalikan lagi | "Stok pulih. Percobaan pengembalian kedua ditolak karena statusnya bukan Dipinjam lagi, jadi stok tidak tergandakan." |
 | 4:20–4:45 | Hapus barang beriwayat | "Ditolak dengan pesan ramah, bukan halaman error framework. Data dan riwayatnya tetap aman." |
 | 4:45–5:00 | Laporan -> Cetak | "Kop laboratorium dan dua kolom tanda tangan siap dicetak atau diekspor ke CSV." |
 | 5:00–5:30 | Logout, tombol "Isi Akun Petugas Lab (Laboran)", login, buka Data Barang | "Badge Petugas Lab tampil. Tombol Tambah, Ubah, dan Hapus hilang. Tombol **QR Label** tetap ada karena hanya membaca data. Klik langsung `/barang/hapus/1` ditolak dengan redirect dan pesan berbahasa Indonesia." |

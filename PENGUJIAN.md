@@ -48,6 +48,8 @@ Lingkungan pengujian:
 | 27 | Tombol Reset Data Demo (Kepala Lab) memulihkan data seed | HTTP + cek tabel | LULUS |
 | 28 | Auto-reset 24 jam: penanda baru tidak reset, penanda kedaluwarsa melakukan reset | HTTP + cek tabel | LULUS |
 | 29 | Berkas seed hilang tidak merusak halaman login (dicatat via `log_message`) | HTTP + cek log | LULUS |
+| 30 | `PeminjamanStatus::buildWhatsappReminderUrl()` menghasilkan URL `https://wa.me/?text=…` dengan `%20` (bukan `+`), tanggal `dd/mm/YYYY`, dan template berbeda untuk `Dipinjam` vs `Terlambat` | CLI PHP | LULUS |
+| 31 | Tombol **Ingatkan** hanya tampil pada baris `Dipinjam`/`Terlambat` (admin & laboran), tidak pada baris `Kembali` | HTTP + render HTML | LULUS |
 
 ## Detail dan Bukti
 
@@ -315,6 +317,43 @@ php spark routes
 ```
 
 Skenario 1–20 di atas dijalankan melalui HTTP nyata terhadap server tersebut (bukan unit test tiruan), sehingga hasilnya mencerminkan perilaku aplikasi yang dilihat pengguna. Skenario 21–29 dijalankan pada 23 November 2026 dengan perintah yang sama (`php spark serve --port 8095`, `curl`, Chromium headless).
+
+### 30. URL pengingat WhatsApp (`buildWhatsappReminderUrl`)
+
+Dijalankan lewat CLI PHP dengan `today = 2026-11-23`; keluaran apa adanya:
+
+```text
+=== Kasus Dipinjam (label=Dipinjam)
+URL   : https://wa.me/?text=Halo%20Budi%20Santoso%2C%20pengingat%20peminjaman%20aset%20Laboratorium%20Komputer%20Khazlab%3A%20Access%20Point%20Ubiquiti%20UniFi%20U6-Lite%20%5BLAB-AP-001%5D%20sebanyak%202%20unit%20%28tgl%20pinjam%2020%2F11%2F2026%29%20memiliki%20jadwal%20jatuh%20tempo%20pengembalian%20pada%2027%2F11%2F2026.%20Terima%20kasih.
+  [OK]   prefix wa.me
+  [OK]   pakai %20 (bukan +)
+  [OK]   tanpa karakter rusak
+  [OK]   tanggal dd/mm/YYYY
+
+=== Kasus Terlambat (label=Terlambat)
+URL   : https://wa.me/?text=Halo%20Siti%20Rahmawati%2C%20mengingatkan%20bahwa%20peminjaman%20aset%20Laboratorium%20Komputer%20Khazlab%20%28Printer%20Laser%20Jet%20HP%20P1102%20%5BLAB-PRN-001%5D%20sebanyak%201%20unit%2C%20tgl%20pinjam%2001%2F11%2F2026%29%20telah%20MELEWATI%20jatuh%20tempo%20pada%2008%2F11%2F2026.%20Mohon%20segera%20dikembalikan%20ke%20laboratorium.%20Terima%20kasih.
+  [OK]   kata MELEWATI
+
+SEMUA CEK LULUS
+```
+
+### 31. Tombol Ingatkan pada `/peminjaman`
+
+Diuji melalui HTTP nyata (`curl` + cookie jar) sebagai admin dan laboran. Seed bawaan berisi 5 transaksi `Dipinjam` yang seluruhnya sudah lewat jatuh tempo, sehingga satu baris (`id_peminjaman = 8`) sementara diberi `tanggal_jatuh_tempo = CURDATE() + 3` agar kasus `Dipinjam` belum jatuh tempo ikut teruji, lalu dikembalikan ke nilai asli.
+
+```text
+GET /peminjaman (admin)   -> 200, 11 baris: badge Dipinjam 1, Terlambat 4, Kembali 5
+                             tautan wa.me: 5 (persis jumlah baris Dipinjam+Terlambat)
+                             baris Kembali: 0 tautan, menampilkan "Tuntas"
+  contoh href (setelah entitas HTML di-unescape, seperti dibaca browser):
+    https://wa.me/?text=Halo%20Rio%20Wirawan%2C%20S.Kom.%2C%20MMSI%20%28Dosen%29%2C%20mengingatkan%20bahwa%20...
+  baris Dipinjam belum jatuh tempo memakai template:
+    "Halo Laboran - Kegiatan Workshop IoT, pengingat peminjaman aset ... memiliki jadwal jatuh tempo ..."
+GET /peminjaman (laboran) -> 200, tombol Ingatkan dirender sama (5), tombol Kembalikan juga tersedia
+GET /peminjaman?page=2,3  -> 200, seluruh baris berstatus Kembali, 0 tautan wa.me
+```
+
+Catatan: `esc($url, 'attr')` mengubah `:/?%=` menjadi entitas HTML di dalam `href`. Itu perilaku resmi escaper CodeIgniter dan aman karena browser meng-unescape atribut sebelum menavigasi — URL akhir yang dibuka WhatsApp identik dengan keluaran CLI pada skenario 30.
 
 ## Catatan Cakupan
 
