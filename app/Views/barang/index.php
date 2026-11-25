@@ -56,7 +56,6 @@
 
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     <div>
-        <h2 class="h5 fw-bold mb-1 text-dark">Manajemen Data Barang</h2>
         <p class="text-muted small mb-0">Kelola seluruh perangkat laboratorium komputer beserta stok, lokasi, dan kondisinya.</p>
     </div>
     <?php if ($isAdmin) : ?>
@@ -158,16 +157,16 @@
                     ?>
                     <tr>
                         <td class="text-center text-muted"><?= $no++ ?></td>
-                        <td class="mono"><?= esc($item['kode_barang']) ?></td>
+                        <td class="mono col-kode"><?= esc($item['kode_barang']) ?></td>
                         <td class="fw-semibold text-dark"><?= esc($item['nama_barang']) ?></td>
                         <td class="small text-muted"><?= esc($item['nama_kategori']) ?></td>
                         <td class="small text-muted"><?= esc($item['nama_lokasi']) ?></td>
                         <td class="text-center fw-semibold <?= (int) $item['jumlah'] <= 3 ? 'text-danger' : 'text-dark' ?>"><?= (int) $item['jumlah'] ?></td>
                         <td class="text-center"><span class="<?= $kelas ?>"><?= esc($item['kondisi']) ?></span></td>
-                        <td class="text-center small text-muted"><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
+                        <td class="text-center small text-muted col-tanggal"><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
                         <td class="text-center">
                             <?php if ($isAdmin) : ?>
-                            <div class="d-inline-flex gap-1">
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
                                 <a href="<?= base_url('barang/edit/' . $item['id_barang']) ?>" class="btn btn-sm btn-outline-primary" title="Ubah data">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>

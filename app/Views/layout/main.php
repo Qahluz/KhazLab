@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <title><?= esc($title ?? 'Khazlab - Sistem Informasi Inventaris Laboratorium') ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= base_url('assets/img/logo-khazlab.svg') ?>">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -68,25 +69,48 @@ $roleIcon    = $role === 'admin' ? 'bi-shield-check' : 'bi-person-workspace';
             </button>
         </form>
     </div>
+
+    <div class="sidebar-drawer-actions">
+        <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary d-inline-flex align-items-center justify-content-center gap-1">
+            <i class="bi bi-plus-lg"></i><span>Pinjam Barang</span>
+        </a>
+        <?php if ($role === 'admin') : ?>
+            <form action="<?= base_url('demo/reset') ?>" method="post">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-sm btn-outline-light w-100 d-inline-flex align-items-center justify-content-center gap-1"
+                        data-confirm-reset>
+                    <i class="bi bi-arrow-counterclockwise"></i><span>Reset Data Demo</span>
+                </button>
+            </form>
+        <?php endif; ?>
+        <form action="<?= base_url('logout') ?>" method="post">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn btn-sm btn-light w-100 d-inline-flex align-items-center justify-content-center gap-1">
+                <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+            </button>
+        </form>
+    </div>
 </aside>
 
-<div id="main-wrapper">
-    <header class="topbar">
-        <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-light border d-lg-none" id="sidebarToggle" type="button" aria-label="Buka navigasi">
+<div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+<div id="main-wrapper">    <header class="topbar">
+        <div class="topbar-main">
+            <button class="btn btn-light border topbar-toggle" id="sidebarToggle" type="button"
+                    aria-label="Buka navigasi" aria-controls="sidebar" aria-expanded="false">
                 <i class="bi bi-list fs-5"></i>
             </button>
-            <div>
-                <h1 class="h6 mb-0 fw-bold text-dark"><?= esc($title ?? 'Dashboard') ?></h1>
-                <div class="text-muted" style="font-size:.75rem">
+            <div class="topbar-heading">
+                <h1 class="topbar-title"><?= esc($title ?? 'Dashboard') ?></h1>
+                <div class="topbar-sub text-muted">
                     <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?> &middot; Sistem Informasi Inventaris Laboratorium Komputer
                 </div>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge <?= $roleBadge ?> d-none d-sm-inline-flex align-items-center"><i class="bi <?= $roleIcon ?> me-1"></i><?= esc($roleLabel) ?></span>
+        <div class="topbar-actions">
+            <span class="badge <?= $roleBadge ?> topbar-role-badge align-items-center"><i class="bi <?= $roleIcon ?> me-1"></i><?= esc($roleLabel) ?></span>
             <?php if ($role === 'admin') : ?>
-                <form action="<?= base_url('demo/reset') ?>" method="post" class="d-none d-lg-block">
+                <form action="<?= base_url('demo/reset') ?>" method="post" class="topbar-desktop-only">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1"
                             data-confirm-reset>
@@ -94,10 +118,30 @@ $roleIcon    = $role === 'admin' ? 'bi-shield-check' : 'bi-person-workspace';
                     </button>
                 </form>
             <?php endif; ?>
-            <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary d-none d-md-inline-flex align-items-center gap-1">
+            <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary topbar-desktop-only align-items-center gap-1">
                 <i class="bi bi-plus-lg"></i><span>Pinjam Barang</span>
             </a>
-            <form action="<?= base_url('logout') ?>" method="post" class="d-none d-sm-block">
+            <form action="<?= base_url('logout') ?>" method="post" class="topbar-desktop-only">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+                </button>
+            </form>
+        </div>
+        <div class="topbar-mobile-actions">
+            <a href="<?= base_url('peminjaman/tambah') ?>" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i><span>Pinjam Barang</span>
+            </a>
+            <?php if ($role === 'admin') : ?>
+                <form action="<?= base_url('demo/reset') ?>" method="post">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1"
+                            data-confirm-reset>
+                        <i class="bi bi-arrow-counterclockwise"></i><span>Reset Data Demo</span>
+                    </button>
+                </form>
+            <?php endif; ?>
+            <form action="<?= base_url('logout') ?>" method="post">
                 <?= csrf_field() ?>
                 <button type="submit" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
                     <i class="bi bi-box-arrow-right"></i><span>Logout</span>
@@ -144,7 +188,22 @@ $roleIcon    = $role === 'admin' ? 'bi-shield-check' : 'bi-person-workspace';
 <script>
     (() => {
         const sidebar = document.getElementById('sidebar');
-        document.getElementById('sidebarToggle')?.addEventListener('click', () => sidebar.classList.toggle('show'));
+        const toggle = document.getElementById('sidebarToggle');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        const setOpen = (open) => {
+            sidebar.classList.toggle('show', open);
+            backdrop.classList.toggle('show', open);
+            document.body.classList.toggle('sidebar-open', open);
+            toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+
+        toggle?.addEventListener('click', () => setOpen(!sidebar.classList.contains('show')));
+        backdrop?.addEventListener('click', () => setOpen(false));
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') setOpen(false);
+        });
+        sidebar.querySelectorAll('.nav-link').forEach((link) => link.addEventListener('click', () => setOpen(false)));
     })();
 
     window.khazlabConfirm = (message, onConfirm, label = 'Ya, Lanjutkan') => {

@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 <?php $isAdmin = session('role') === 'admin'; ?>
-<div class="d-flex align-items-center justify-content-between mb-3">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     <div>
         <h2 class="h5 fw-bold mb-1 text-dark">Daftar Lokasi Penyimpanan</h2>
         <p class="text-muted small mb-0">Kelola ruangan dan tempat penempatan perangkat laboratorium komputer.</p>

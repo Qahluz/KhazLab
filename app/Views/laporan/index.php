@@ -74,7 +74,8 @@
             <div class="col-md-3"><div class="border rounded p-2"><div class="text-muted">Rusak Berat</div><div class="fw-bold text-danger"><?= $countRusakBerat ?></div></div></div>
         </div>
 
-        <table class="table table-custom table-bordered align-middle">
+        <div class="table-responsive">
+            <table class="table table-custom table-bordered align-middle">
             <thead>
                 <tr>
                     <th class="text-center" style="width:42px">No</th>
@@ -94,7 +95,7 @@
                 <?php $no = 1; foreach ($barang as $item) : ?>
                     <tr>
                         <td class="text-center"><?= $no++ ?></td>
-                        <td class="mono"><?= esc($item['kode_barang']) ?></td>
+                        <td class="mono col-kode"><?= esc($item['kode_barang']) ?></td>
                         <td><?= esc($item['nama_barang']) ?></td>
                         <td><?= esc($item['nama_kategori']) ?></td>
                         <td><?= esc($item['nama_lokasi']) ?></td>
@@ -106,6 +107,7 @@
             <?php endif; ?>
             </tbody>
         </table>
+        </div>
 
         <div class="row pt-4 mt-4 text-center small">
             <div class="col-6">

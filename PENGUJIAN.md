@@ -48,10 +48,12 @@ Lingkungan pengujian:
 | 27 | Tombol Reset Data Demo (Kepala Lab) memulihkan data seed | HTTP + cek tabel | LULUS |
 | 28 | Auto-reset 24 jam: penanda baru tidak reset, penanda kedaluwarsa melakukan reset | HTTP + cek tabel | LULUS |
 | 29 | Berkas seed hilang tidak merusak halaman login (dicatat via `log_message`) | HTTP + cek log | LULUS |
-| 30 | `PeminjamanStatus::buildWhatsappReminderUrl()` menghasilkan URL `https://wa.me/?text=…` dengan `%20` (bukan `+`), tanggal `dd/mm/YYYY`, dan template berbeda untuk `Dipinjam` vs `Terlambat` | CLI PHP | LULUS |
+| 30 | `PeminjamanStatus::buildWhatsappReminderUrl()` menghasilkan URL `https://wa.me/?text=…` multi-baris (`%0A`, bukan `+`), format tebal WhatsApp, rincian perangkat/jumlah/tanggal, dan template berbeda untuk `Dipinjam` vs `Terlambat` | CLI PHP | LULUS |
 | 31 | Tombol **Ingatkan** hanya tampil pada baris `Dipinjam`/`Terlambat` (admin & laboran), tidak pada baris `Kembali` | HTTP + render HTML | LULUS |
 | 32 | Logo Khazlab tampil di sidebar, halaman login, dan kop cetak; favicon terpasang; berkas SVG tersaji `image/svg+xml` | HTTP + render HTML | LULUS |
 | 33 | `CI_ENVIRONMENT = production` menghilangkan Debug Toolbar (0 kemunculan `ci-debugbar`) pada `/login` dan `/dashboard` | HTTP + render HTML | LULUS |
+| 34 | Tampilan mobile: overlay sidebar hanya aktif saat `.show`, `color-scheme: light` di `<meta>` kedua halaman dan `:root` CSS | Inspeksi CSS + render HTML | LULUS |
+| 35 | Tanpa horizontal overflow pada 8 halaman utama di viewport `360×800` dan `390×844` (`scrollWidth <= innerWidth`), tombol **Reset Data Demo**/**Logout** di dalam batas layar (`right <= innerWidth`: 344/344 pada 360px, 285/374 pada 390px), dan backdrop drawer hanya tampil saat terbuka | Chromium headless (Playwright) | LULUS |
 
 ## Detail dan Bukti
 
@@ -322,22 +324,61 @@ Skenario 1–20 di atas dijalankan melalui HTTP nyata terhadap server tersebut (
 
 ### 30. URL pengingat WhatsApp (`buildWhatsappReminderUrl`)
 
-Dijalankan lewat CLI PHP dengan `today = 2026-11-23`; keluaran apa adanya:
+Dijalankan lewat CLI PHP dengan `today = 2026-12-01` setelah template diubah menjadi pesan multi-baris berformat tebal WhatsApp; keluaran apa adanya:
 
 ```text
-=== Kasus Dipinjam (label=Dipinjam)
-URL   : https://wa.me/?text=Halo%20Budi%20Santoso%2C%20pengingat%20peminjaman%20aset%20Laboratorium%20Komputer%20Khazlab%3A%20Access%20Point%20Ubiquiti%20UniFi%20U6-Lite%20%5BLAB-AP-001%5D%20sebanyak%202%20unit%20%28tgl%20pinjam%2020%2F11%2F2026%29%20memiliki%20jadwal%20jatuh%20tempo%20pengembalian%20pada%2027%2F11%2F2026.%20Terima%20kasih.
-  [OK]   prefix wa.me
-  [OK]   pakai %20 (bukan +)
-  [OK]   tanpa karakter rusak
-  [OK]   tanggal dd/mm/YYYY
+=== TERLAMBAT (Terlambat) ===
+*PENGINGAT KETERLAMBATAN PENGEMBALIAN*
+*Laboratorium Komputer — Khazlab*
 
-=== Kasus Terlambat (label=Terlambat)
-URL   : https://wa.me/?text=Halo%20Siti%20Rahmawati%2C%20mengingatkan%20bahwa%20peminjaman%20aset%20Laboratorium%20Komputer%20Khazlab%20%28Printer%20Laser%20Jet%20HP%20P1102%20%5BLAB-PRN-001%5D%20sebanyak%201%20unit%2C%20tgl%20pinjam%2001%2F11%2F2026%29%20telah%20MELEWATI%20jatuh%20tempo%20pada%2008%2F11%2F2026.%20Mohon%20segera%20dikembalikan%20ke%20laboratorium.%20Terima%20kasih.
+Halo *Siti Rahmawati*,
+Peminjaman inventaris laboratorium berikut telah *MELEWATI* tanggal jatuh tempo:
+
+• *Perangkat:* Kursi Ergonomis (LAB-KRS-001)
+• *Jumlah:* 2 unit
+• *Tgl Pinjam:* 20/11/2026
+• *Jatuh Tempo:* 27/11/2026
+
+Mohon segera mengembalikan perangkat tersebut ke ruang laboratorium. Terima kasih.
+
+URL: https://wa.me/?text=%2APENGINGAT%20KETERLAMBATAN%20PENGEMBALIAN%2A%0A%2ALaboratorium%20Komputer%20%E2%80%94%20Khazlab%2A%0A%0AHalo%20%2ASiti%20Rahmawati%2A%2C%0A...%0A%0AMohon%20segera%20mengembalikan%20perangkat%20tersebut%20ke%20ruang%20laboratorium.%20Terima%20kasih.
+  [OK]   prefix wa.me
+  [OK]   ada %0A
+  [OK]   tidak ada +
+  [OK]   tidak ada spasi mentah
+  [OK]   charset aman
+  [OK]   jumlah baris 12
+  [OK]   format perangkat / jumlah / tgl pinjam / jatuh tempo
   [OK]   kata MELEWATI
+
+=== DIPINJAM (Dipinjam) ===
+*PENGINGAT JATUH TEMPO PEMINJAMAN*
+*Laboratorium Komputer — Khazlab*
+
+Halo *Siti Rahmawati*,
+Berikut pengingat jadwal pengembalian inventaris laboratorium yang sedang Anda pinjam:
+
+• *Perangkat:* Kursi Ergonomis (LAB-KRS-001)
+• *Jumlah:* 2 unit
+• *Tgl Pinjam:* 20/11/2026
+• *Jatuh Tempo:* 05/12/2026
+
+Mohon mengembalikan perangkat tepat waktu sesuai jadwal. Terima kasih.
+
+URL: https://wa.me/?text=%2APENGINGAT%20JATUH%20TEMPO%20PEMINJAMAN%2A%0A...%0A%0AMohon%20mengembalikan%20perangkat%20tepat%20waktu%20sesuai%20jadwal.%20Terima%20kasih.
+  [OK]   prefix wa.me
+  [OK]   ada %0A
+  [OK]   tidak ada +
+  [OK]   tidak ada spasi mentah
+  [OK]   charset aman
+  [OK]   jumlah baris 12
+  [OK]   format perangkat / jumlah / tgl pinjam / jatuh tempo
+  [OK]   tanpa MELEWATI
 
 SEMUA CEK LULUS
 ```
+
+Kriteria `jumlah baris 12` = hasil `rawurldecode()` memuat tepat 11 karakter `\n`, yaitu dua baris judul, satu baris kosong, dua baris kalimat pembuka, satu baris kosong, empat butir rincian, satu baris kosong, dan satu kalimat penutup.
 
 ### 31. Tombol Ingatkan pada `/peminjaman`
 
@@ -348,14 +389,48 @@ GET /peminjaman (admin)   -> 200, 11 baris: badge Dipinjam 1, Terlambat 4, Kemba
                              tautan wa.me: 5 (persis jumlah baris Dipinjam+Terlambat)
                              baris Kembali: 0 tautan, menampilkan "Tuntas"
   contoh href (setelah entitas HTML di-unescape, seperti dibaca browser):
-    https://wa.me/?text=Halo%20Rio%20Wirawan%2C%20S.Kom.%2C%20MMSI%20%28Dosen%29%2C%20mengingatkan%20bahwa%20...
+    https://wa.me/?text=%2APENGINGAT%20KETERLAMBATAN%20PENGEMBALIAN%2A%0A%2ALaboratorium%20Komputer%20%E2%80%94%20Khazlab%2A%0A%0AHalo%20%2ARio%20Wirawan%2C%20S.Kom.%2C%20MMSI%20%28Dosen%29%2A%2C%0A...
   baris Dipinjam belum jatuh tempo memakai template:
-    "Halo Laboran - Kegiatan Workshop IoT, pengingat peminjaman aset ... memiliki jadwal jatuh tempo ..."
+    "*PENGINGAT JATUH TEMPO PEMINJAMAN* ... Berikut pengingat jadwal pengembalian inventaris laboratorium ..."
 GET /peminjaman (laboran) -> 200, tombol Ingatkan dirender sama (5), tombol Kembalikan juga tersedia
 GET /peminjaman?page=2,3  -> 200, seluruh baris berstatus Kembali, 0 tautan wa.me
 ```
 
 Catatan: `esc($url, 'attr')` mengubah `:/?%=` menjadi entitas HTML di dalam `href`. Itu perilaku resmi escaper CodeIgniter dan aman karena browser meng-unescape atribut sebelum menavigasi — URL akhir yang dibuka WhatsApp identik dengan keluaran CLI pada skenario 30.
+
+### 35. Uji responsif smartphone (`360×800` dan `390×844`)
+
+Dijalankan dengan Chromium headless (Playwright) pada login `admin`, mengunjungi 8 halaman: `/dashboard`, `/dashboard/analitik`, `/barang`, `/kategori`, `/lokasi`, `/peminjaman`, `/laporan`, `/laporan/cetak-peminjaman`. Setiap halaman dianggap gagal jika `scrollWidth > innerWidth`, halaman merender error, atau tombol aksi global keluar dari batas layar. Keluaran apa adanya:
+
+```text
+===== VIEWPORT 360x800 =====
+PASS /dashboard                   http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /dashboard/analitik          http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /barang                      http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /kategori                    http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /lokasi                      http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /peminjaman                  http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /laporan                     http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS /laporan/cetak-peminjaman    http=200 scrollWidth=360 innerWidth=360 resetBtn=344 logout=344
+PASS drawer-open {"backdrop":"block","sidebarShow":true,"ariaExpanded":"true","actionsDisplay":"flex","actionsRight":264,"scrollWidth":360,"innerWidth":360}
+PASS drawer-closed {"backdrop":"none","sidebarShow":false,"ariaExpanded":"false"}
+
+===== VIEWPORT 390x844 =====
+PASS /dashboard                   http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /dashboard/analitik          http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /barang                      http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /kategori                    http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /lokasi                      http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /peminjaman                  http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /laporan                     http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS /laporan/cetak-peminjaman    http=200 scrollWidth=390 innerWidth=390 resetBtn=285 logout=374
+PASS drawer-open {"backdrop":"block","sidebarShow":true,"ariaExpanded":"true","actionsDisplay":"flex","actionsRight":264,"scrollWidth":390,"innerWidth":390}
+PASS drawer-closed {"backdrop":"none","sidebarShow":false,"ariaExpanded":"false"}
+
+ALL CHECKS PASSED
+```
+
+Catatan: elemen `<table>` memang lebih lebar dari viewport dan itu disengaja — setiap tabel berada di dalam `.table-responsive` sehingga yang bergeser hanya area tabel di dalam kartunya, sementara `documentElement.scrollWidth` tetap sama dengan lebar layar.
 
 ## Catatan Cakupan
 

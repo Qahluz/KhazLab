@@ -37,19 +37,38 @@ class PeminjamanStatus
 
     public static function buildWhatsappReminderUrl(array $row, ?string $today = null): string
     {
-        $tglPinjam = date('d/m/Y', strtotime($row['tanggal_pinjam']));
-        $tglTempo  = date('d/m/Y', strtotime($row['tanggal_jatuh_tempo']));
-        $aset      = $row['nama_barang'] . ' [' . $row['kode_barang'] . ']';
+        $nama       = $row['nama_peminjam'];
+        $barang     = $row['nama_barang'] . ' (' . $row['kode_barang'] . ')';
+        $jumlah     = (int) $row['jumlah_pinjam'];
+        $tglPinjam  = date('d/m/Y', strtotime($row['tanggal_pinjam']));
+        $tglTempo   = date('d/m/Y', strtotime($row['tanggal_jatuh_tempo']));
 
         if (self::label($row, $today) === 'Terlambat') {
-            $pesan = 'Halo ' . $row['nama_peminjam'] . ', mengingatkan bahwa peminjaman aset Laboratorium Komputer Khazlab ('
-                . $aset . ' sebanyak ' . (int) $row['jumlah_pinjam'] . ' unit, tgl pinjam ' . $tglPinjam
-                . ') telah MELEWATI jatuh tempo pada ' . $tglTempo
-                . '. Mohon segera dikembalikan ke laboratorium. Terima kasih.';
+            $pesan = "*PENGINGAT KETERLAMBATAN PENGEMBALIAN*\n"
+                . "*Laboratorium Komputer — Khazlab*\n"
+                . "\n"
+                . "Halo *{$nama}*,\n"
+                . "Peminjaman inventaris laboratorium berikut telah *MELEWATI* tanggal jatuh tempo:\n"
+                . "\n"
+                . "• *Perangkat:* {$barang}\n"
+                . "• *Jumlah:* {$jumlah} unit\n"
+                . "• *Tgl Pinjam:* {$tglPinjam}\n"
+                . "• *Jatuh Tempo:* {$tglTempo}\n"
+                . "\n"
+                . 'Mohon segera mengembalikan perangkat tersebut ke ruang laboratorium. Terima kasih.';
         } else {
-            $pesan = 'Halo ' . $row['nama_peminjam'] . ', pengingat peminjaman aset Laboratorium Komputer Khazlab: '
-                . $aset . ' sebanyak ' . (int) $row['jumlah_pinjam'] . ' unit (tgl pinjam ' . $tglPinjam
-                . ') memiliki jadwal jatuh tempo pengembalian pada ' . $tglTempo . '. Terima kasih.';
+            $pesan = "*PENGINGAT JATUH TEMPO PEMINJAMAN*\n"
+                . "*Laboratorium Komputer — Khazlab*\n"
+                . "\n"
+                . "Halo *{$nama}*,\n"
+                . "Berikut pengingat jadwal pengembalian inventaris laboratorium yang sedang Anda pinjam:\n"
+                . "\n"
+                . "• *Perangkat:* {$barang}\n"
+                . "• *Jumlah:* {$jumlah} unit\n"
+                . "• *Tgl Pinjam:* {$tglPinjam}\n"
+                . "• *Jatuh Tempo:* {$tglTempo}\n"
+                . "\n"
+                . 'Mohon mengembalikan perangkat tepat waktu sesuai jadwal. Terima kasih.';
         }
 
         return 'https://wa.me/?text=' . rawurlencode($pesan);

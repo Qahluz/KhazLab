@@ -117,14 +117,14 @@
                             <div class="mono text-muted"><?= esc($row['kode_barang']) ?> &middot; <?= esc($row['nama_lokasi']) ?></div>
                         </td>
                         <td class="text-center"><?= (int) $row['jumlah_pinjam'] ?> unit</td>
-                        <td class="text-center small text-muted"><?= date('d/m/Y', strtotime($row['tanggal_pinjam'])) ?></td>
-                        <td class="text-center small">
+                        <td class="text-center small text-muted col-tanggal"><?= date('d/m/Y', strtotime($row['tanggal_pinjam'])) ?></td>
+                        <td class="text-center small col-tanggal">
                             <?= date('d/m/Y', strtotime($row['tanggal_jatuh_tempo'])) ?>
                             <?php if ($telat > 0) : ?>
                                 <div class="text-danger" style="font-size:.72rem">+<?= $telat ?> hari</div>
                             <?php endif; ?>
                         </td>
-                        <td class="text-center small">
+                        <td class="text-center small col-tanggal">
                             <?= $row['tanggal_kembali'] ? date('d/m/Y', strtotime($row['tanggal_kembali'])) : '<span class="text-muted fst-italic">-</span>' ?>
                         </td>
                         <td class="text-center">
@@ -132,15 +132,17 @@
                         </td>
                         <td class="text-center">
                             <?php if ($row['status'] === 'Dipinjam') : ?>
-                                <a href="<?= esc(\App\Libraries\PeminjamanStatus::buildWhatsappReminderUrl($row), 'attr') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success" title="Kirim pengingat jatuh tempo via WhatsApp"><i class="bi bi-whatsapp"></i> Ingatkan</a>
-                                <button type="button" class="btn btn-sm btn-outline-success btn-kembalikan"
-                                        data-id="<?= $row['id_peminjaman'] ?>"
-                                        data-nama="<?= esc($row['nama_peminjam']) ?>"
-                                        data-barang="<?= esc($row['nama_barang']) ?>"
-                                        data-jumlah="<?= (int) $row['jumlah_pinjam'] ?>"
-                                        data-tempo="<?= date('d/m/Y', strtotime($row['tanggal_jatuh_tempo'])) ?>">
-                                    <i class="bi bi-check-lg me-1"></i>Kembalikan
-                                </button>
+                                <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                  <a href="<?= esc(\App\Libraries\PeminjamanStatus::buildWhatsappReminderUrl($row), 'attr') ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success" title="Kirim pengingat jatuh tempo via WhatsApp"><i class="bi bi-whatsapp"></i> Ingatkan</a>
+                                  <button type="button" class="btn btn-sm btn-outline-success btn-kembalikan"
+                                          data-id="<?= $row['id_peminjaman'] ?>"
+                                          data-nama="<?= esc($row['nama_peminjam']) ?>"
+                                          data-barang="<?= esc($row['nama_barang']) ?>"
+                                          data-jumlah="<?= (int) $row['jumlah_pinjam'] ?>"
+                                          data-tempo="<?= date('d/m/Y', strtotime($row['tanggal_jatuh_tempo'])) ?>">
+                                      <i class="bi bi-check-lg me-1"></i>Kembalikan
+                                  </button>
+                                </div>
                             <?php else : ?>
                                 <span class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Tuntas</span>
                             <?php endif; ?>
