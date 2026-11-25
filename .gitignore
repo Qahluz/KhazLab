@@ -21,6 +21,7 @@
 /writable/uploads/*
 !/writable/uploads/.gitkeep
 !/writable/uploads/index.html
+/writable/demo_last_reset.txt
 
 # OS / editor
 .DS_Store

@@ -34,7 +34,7 @@ Lingkungan pengujian:
 | 15 | Kode barang unik saat tambah dan edit | HTTP + cek database | LULUS |
 | 16 | Semua route administrator terlindungi filter `auth` | `php spark routes` | LULUS |
 | 17 | CSRF aktif di seluruh route POST | `php spark routes` + render form | LULUS |
-| 18 | Syntax seluruh file PHP aplikasi | `php -l` (78 file) | LULUS |
+| 18 | Syntax seluruh file PHP aplikasi | `php -l` (81 file) | LULUS |
 | 19 | Layout cetak menyembunyikan navigasi | Emulasi media `print` | LULUS |
 | 19a | Label Stiker QR: tombol `QR Label` dirender untuk admin dan laboran, QR dibuat di browser dengan `qrcodejs` CDN, URL QR membuka tepat satu baris barang saat dipindai | Render HTML + eksekusi pustaka QR | LULUS |
 | 19b | Cetak stiker tidak mengganggu cetak laporan: seluruh aturan stiker dibatasi `body.qr-printing`, `khazlab.css` dan view laporan tidak berubah | Audit aturan CSS + render laporan | LULUS |
@@ -50,6 +50,8 @@ Lingkungan pengujian:
 | 29 | Berkas seed hilang tidak merusak halaman login (dicatat via `log_message`) | HTTP + cek log | LULUS |
 | 30 | `PeminjamanStatus::buildWhatsappReminderUrl()` menghasilkan URL `https://wa.me/?text=…` dengan `%20` (bukan `+`), tanggal `dd/mm/YYYY`, dan template berbeda untuk `Dipinjam` vs `Terlambat` | CLI PHP | LULUS |
 | 31 | Tombol **Ingatkan** hanya tampil pada baris `Dipinjam`/`Terlambat` (admin & laboran), tidak pada baris `Kembali` | HTTP + render HTML | LULUS |
+| 32 | Logo Khazlab tampil di sidebar, halaman login, dan kop cetak; favicon terpasang; berkas SVG tersaji `image/svg+xml` | HTTP + render HTML | LULUS |
+| 33 | `CI_ENVIRONMENT = production` menghilangkan Debug Toolbar (0 kemunculan `ci-debugbar`) pada `/login` dan `/dashboard` | HTTP + render HTML | LULUS |
 
 ## Detail dan Bukti
 

@@ -24,6 +24,7 @@ Project ini dibuat untuk memenuhi tugas **Praktikum Pemrograman Web Semester III
 | Dashboard | Kartu statistik aset, tabel stok menipis/rusak berat/terlambat, peminjaman terkini, grafik ringkas |
 | Analitik | Total aset fisik vs stok tersedia, komposisi kondisi (Baik/Rusak Ringan/Rusak Berat), tren peminjaman 6 bulan, unit dipinjam per barang, ekspor CSV |
 | Data Barang | CRUD, pencarian kode/nama, filter kategori/lokasi/kondisi, pagination, validasi kode unik, proteksi stok di bawah unit yang dipinjam |
+| Identitas Visual | Logo Khazlab (`public/assets/img/logo-khazlab.svg`) dipasang proporsional (`object-fit: contain`) di sidebar, halaman login, kop cetak laporan, dan sebagai favicon browser |
 | Label Stiker QR | Tombol **QR Label** di setiap baris barang (admin & laboran, read-only) membuka modal pratinjau stiker aset: kode barang monospace, nama perangkat, kategori, dan lokasi. QR dibuat di sisi browser dengan `qrcodejs` (CDN, tanpa ekstensi PHP tambahan) dan mengarah ke `barang?keyword=<kode_barang>`, sehingga hasil pindai kamera langsung membuka perangkat tersebut. Tombol **Cetak Stiker** memakai aturan `@media print` terpisah yang hanya mencetak kartu stiker (ukuran ± 62 mm) tanpa sidebar, topbar, maupun tabel, dan tidak mengubah layout cetak laporan. |
 | Kategori | CRUD dengan penanganan ramah saat kategori masih dipakai barang |
 | Lokasi | CRUD dengan penanganan ramah saat lokasi masih dipakai barang |
@@ -79,7 +80,7 @@ Copy-Item env .env
 Sesuaikan konfigurasi utama:
 
 ```env
-CI_ENVIRONMENT = development
+CI_ENVIRONMENT = production
 
 app.baseURL = 'http://127.0.0.1:8081/'
 
@@ -92,6 +93,7 @@ database.default.port = 3306
 ```
 
 > `app.baseURL` harus sama dengan host dan port yang dibuka di browser.
+> `CI_ENVIRONMENT = production` mematikan CodeIgniter Debug Toolbar (ikon api di pojok kanan bawah) dan menyembunyikan stack trace. Untuk pengembangan, set ke `development` sementara; jangan pernah membawa nilai `development` ke server publik. File `.env` sudah masuk `.gitignore` dan tidak ikut ter-commit.
 
 ### 3. Import database
 

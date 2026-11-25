@@ -20,6 +20,7 @@
 <div class="card-custom">
     <div class="p-4">
         <div class="text-center border-bottom pb-3 mb-3">
+            <img src="<?= base_url('assets/img/logo-khazlab.svg') ?>" alt="Logo Khazlab" style="width:64px;height:64px;object-fit:contain" class="mb-2">
             <h3 class="h5 fw-bold mb-1 text-dark">LABORATORIUM KOMPUTER - PROGRAM STUDI SISTEM INFORMASI</h3>
             <div class="small text-muted">Sistem Informasi Inventaris Laboratorium (Khazlab)</div>
             <div class="small text-muted">Jl. Kampus Praktikum No. 1, Jakarta &middot; labkom@kampus.ac.id</div>

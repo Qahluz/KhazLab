@@ -49,9 +49,14 @@ body {
     width: 38px; height: 38px;
     display: grid; place-items: center;
     border-radius: 10px;
-    background: var(--lab-primary);
-    color: #fff;
-    font-size: 1.1rem;
+    background: #fff;
+    overflow: hidden;
+}
+
+#sidebar .brand-logo {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: 3px;
 }
 
 #sidebar .brand-text { display: flex; flex-direction: column; line-height: 1.15; color: #fff; }

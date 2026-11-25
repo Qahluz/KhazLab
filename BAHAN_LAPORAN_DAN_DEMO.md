@@ -238,6 +238,7 @@ Bagian ini yang paling sering dinilai pada laporan akhir: bukan sekadar "apa yan
 | Navigasi atas sederhana | Sidebar tetap + topbar dengan identitas pengguna | Orientasi lokasi jelas pada banyak modul |
 | Warna default Bootstrap | Palet laboratorium/akademik terpusat di variabel CSS | Konsisten dan mudah diubah |
 | Tanpa kartu statistik | Kartu ringkas pada dashboard, peminjaman, barang, laporan | Angka penting tampil sebelum tabel |
+| Ikon CPU dan kotak bawaan Bootstrap | Logo Khazlab asli di sidebar, login, dan kop cetak (`object-fit: contain`, tetap proporsional di segala ukuran), plus favicon | Identitas institusi terbaca dan tetap tajam saat dicetak |
 | Tabel kosong tanpa keterangan | Empty state informatif + ajakan aksi | Tidak terkesan aplikasi rusak |
 | Tabel lebar memaksa scroll | Tabel responsif; tidak ada scroll horizontal di 504px | Tetap terpakai di laptop kecil |
 | Alert bawaan browser | Modal konfirmasi seragam | Pengalaman konsisten |

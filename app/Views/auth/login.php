@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'Login Administrator - Khazlab') ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= base_url('assets/img/logo-khazlab.svg') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -42,14 +43,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 52px;
-            height: 52px;
-            background-color: var(--primary-color);
-            color: #ffffff;
-            border-radius: 12px;
-            font-size: 1.5rem;
+            width: 64px;
+            height: 64px;
+            background-color: #ffffff;
+            border-radius: 16px;
             margin-bottom: 1rem;
+            padding: 6px;
             box-shadow: 0 6px 16px rgba(29, 78, 216, .35);
+            overflow: hidden;
         }
 
         .login-title {
@@ -196,7 +197,7 @@
 <main class="login-card" role="main">
     <div class="text-center">
         <div class="brand-badge">
-            <i class="bi bi-box-seam"></i>
+            <img src="<?= base_url('assets/img/logo-khazlab.svg') ?>" alt="Logo Khazlab" style="width:100%;height:100%;object-fit:contain">
         </div>
         <h1 class="login-title">Khazlab</h1>
         <p class="login-subtitle">Sistem Informasi Inventaris Laboratorium Komputer</p>
