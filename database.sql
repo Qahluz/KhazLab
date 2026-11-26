@@ -150,8 +150,6 @@ CREATE TABLE `peminjaman` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `peminjaman` (`id_peminjaman`, `id_barang`, `nama_peminjam`, `jumlah_pinjam`, `tanggal_pinjam`, `tanggal_jatuh_tempo`, `tanggal_kembali`, `status`, `created_at`, `updated_at`) VALUES
-(1, 5, 'Rio Wirawan, S.Kom., MMSI (Dosen)', 1, '2026-11-07', '2026-11-14', NULL, 'Dipinjam', '2026-11-07 08:10:00', '2026-11-07 08:10:00'),
-(2, 8, 'Afwan Nasuha (Mahasiswa)', 1, '2026-11-04', '2026-11-11', '2026-11-08', 'Kembali', '2026-11-04 09:00:00', '2026-11-08 15:40:00'),
 (3, 1, 'Yulia Sari (Mahasiswa)', 1, '2026-11-12', '2026-11-19', NULL, 'Dipinjam', '2026-11-12 07:45:00', '2026-11-12 07:45:00'),
 (4, 6, 'Lab Basis Data - Praktikum Mingguan', 1, '2026-11-11', '2026-11-18', NULL, 'Dipinjam', '2026-11-11 13:00:00', '2026-11-11 13:00:00'),
 (5, 9, 'Rudi Hartono (Asisten Lab)', 1, '2026-11-05', '2026-11-12', '2026-11-12', 'Kembali', '2026-11-05 10:20:00', '2026-11-12 16:05:00'),
